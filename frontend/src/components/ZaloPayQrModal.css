@@ -1,0 +1,140 @@
+.zlpQrOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+.zlpQrDialog {
+  max-width: 400px;
+  width: 100%;
+  background: #fff;
+  color: #0f172a;
+  border-radius: 16px;
+  padding: 24px 20px 20px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
+}
+
+/* Khối QR nhúng trực tiếp trên trang (ví dụ checkout) */
+.zlpQrPanel {
+  max-width: 440px;
+  width: 100%;
+  margin: 0 auto;
+  background: var(--color-bg-white, #fff);
+  color: #0f172a;
+  border-radius: 16px;
+  padding: 24px 20px 20px;
+  border: 1px solid var(--color-border, #e2e8f0);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+.zlpQrTitle {
+  margin: 0 0 10px;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.zlpQrHint {
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: #334155;
+}
+
+.zlpQrOrderId {
+  margin: 0 0 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.zlpQrFrame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  margin-bottom: 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.zlpQrImg {
+  display: block;
+  width: 280px;
+  height: 280px;
+  image-rendering: pixelated;
+}
+
+.zlpQrLoading,
+.zlpQrErr {
+  margin: 0;
+  padding: 16px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.zlpQrErr {
+  color: #b45309;
+}
+
+.zlpQrActions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.zlpQrBtn {
+  border: none;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.zlpQrBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.zlpQrBtnPrimary {
+  background: #0068ff;
+  color: #fff;
+}
+
+.zlpQrBtnPrimary:hover:not(:disabled) {
+  background: #0056d6;
+}
+
+.zlpQrBtnSecondary {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.zlpQrBtnSecondary:hover:not(:disabled) {
+  background: #cbd5e1;
+}
+
+.zlpQrDismiss {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 8px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.zlpQrDismiss:hover {
+  color: #0f172a;
+}

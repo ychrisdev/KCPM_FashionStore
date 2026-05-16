@@ -1,0 +1,24 @@
+Xin chào {{ username }},
+
+Cảm ơn bạn đã đặt hàng tại FashionStore.
+
+Mã đơn: #{{ order_id }}
+
+Chi tiết sản phẩm:
+{% for line in item_lines %}{{ line }}
+{% endfor %}
+
+Tạm tính: {{ subtotal }}đ
+Phí vận chuyển: {{ shipping_fee }}đ
+Tổng thanh toán: {{ total }}đ
+
+Giao hàng:
+- Người nhận: {{ shipping_name }}
+- Điện thoại: {{ shipping_phone }}
+- Địa chỉ: {{ shipping_address }}
+{% if shipping_note %}- Ghi chú: {{ shipping_note }}
+{% endif %}
+Chúng tôi sẽ xử lý đơn và liên hệ khi cần.
+
+Trân trọng,
+FashionStore

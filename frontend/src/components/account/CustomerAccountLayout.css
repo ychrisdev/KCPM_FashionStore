@@ -1,0 +1,93 @@
+/* Biến thể layout admin cho khách — sidebar ấm hơn một chút */
+.customer-account-layout .admin-sidebar {
+  background: linear-gradient(180deg, #2e2c29 0%, #252320 100%);
+}
+
+.customer-account-layout .admin-sidebar-header {
+  padding-bottom: 16px;
+}
+
+.customer-account-tagline {
+  margin: 6px 0 0;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+}
+
+.customer-account-layout .admin-nav-item.active {
+  background: rgba(201, 107, 101, 0.18);
+  color: #f0a8a2;
+  border-left-color: #e07870;
+}
+
+.customer-dash-pill {
+  background: #fdf2f1 !important;
+  color: #9a4840 !important;
+}
+
+.customer-account-layout .admin-content a.stat-card {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.customer-account-content {
+  min-height: 50vh;
+}
+
+.customer-account-embedInner {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* Ẩn tiêu đề trùng với admin-header khi nhúng */
+.orderHistoryTitle--embed,
+.returns-title--embed {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.profile-pageHeader--embed .profileTitle {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.profile-pageHeader--embed {
+  margin: 0 0 1rem;
+  min-height: 0;
+}
+
+.profile-page--embed .profile-hero {
+  display: none;
+}
+
+.profile-page--embed.pageSection {
+  padding-top: 0;
+}
+
+.order-history-page--embed.pageSection {
+  padding-top: 0;
+}
+
+.my-returns-page--embed.pageSection {
+  padding-top: 0;
+}
+
+.wallet-page--embed.pageSection {
+  padding-top: 0;
+  padding-bottom: 56px;
+}

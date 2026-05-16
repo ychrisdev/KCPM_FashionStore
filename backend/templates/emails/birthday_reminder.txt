@@ -1,0 +1,24 @@
+{{ display_name }} thân mến,
+
+{{ intro_text }}
+
+--- Lời chúc từ FashionStore ---
+Chúc bạn tuổi mới khỏe mạnh, may mắn và luôn tự tin với phong cách của riêng mình.
+Cảm ơn bạn đã tin tưởng đồng hành cùng chúng tôi.
+
+{% if has_voucher_block %}
+--- Voucher ưu đãi ---
+{% if has_discount_percent %}Giảm {{ discount_percent }}% đơn hàng
+{% endif %}{% if discount_name %}{{ discount_name }}
+{% endif %}Mã: {{ voucher_code }}
+Nhập mã khi thanh toán (theo điều kiện trên website).
+{% else %}
+--- Ưu đãi & khuyến mãi ---
+Xem sản phẩm và khuyến mãi tại: {{ products_url }}
+{% endif %}
+
+{{ cta_button_label }}: {{ shop_url }}
+Xem sản phẩm: {{ products_url }}
+
+---
+{{ footer_text }}

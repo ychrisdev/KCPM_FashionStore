@@ -1,0 +1,85 @@
+* [33m4787fc5[m[33m ([m[1;36mHEAD[m[33m)[m update ui, cart,orderhistory, wishlist
+*   [33m8787a69[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Merge pull request #6 from Banh-ntat/bao-bao
+[32m|[m[33m\[m  
+[32m|[m * [33m48aa406[m[33m ([m[1;31morigin/bao-bao[m[33m)[m  thêm khách hàng review sản phẩm
+* [33m|[m [33mdf58597[m Merge pull request #5 from Banh-ntat/bao-bao
+[34m|[m[33m\[m[33m|[m 
+[34m|[m *   [33m710b1b6[m Merge branch 'main' into bao-bao
+[34m|[m [36m|[m[34m\[m  
+[34m|[m [36m|[m[34m/[m  
+[34m|[m[34m/[m[36m|[m   
+[34m|[m * [33m2fd2882[m update discount
+[34m|[m [1;31m|[m * [33m2923ec0[m[33m ([m[1;32mmain[m[33m)[m  update ui cart,history,wishlist
+[34m|[m [1;31m|[m[34m/[m  
+[34m|[m[34m/[m[1;31m|[m   
+* [1;31m|[m [33m151c571[m Merge pull request #4 from Banh-ntat/bao-bao
+[1;33m|[m[1;31m\[m[1;31m|[m 
+[1;33m|[m * [33m7a51dfc[m thêm xử lý cuộn lên đầu trang khi đổi route
+* [1;34m|[m [33m6590caa[m cleans up css files
+* [1;34m|[m [33m7a0d44e[m fix scroll to top func
+* [1;34m|[m [33m078fe17[m add product sort section & adjust css folders
+* [1;34m|[m [33m5862f05[m adjust home layout css
+* [1;34m|[m [33m036d6dd[m adding scroll to top func
+[1;34m|[m[1;34m/[m  
+* [33md5c3362[m Remove .claude from git tracking
+* [33mc778410[m fix lỗi đặt hàng thất bại khi nhấn vào thanh toán
+*   [33mc338476[m Thêm modal xử lý thêm vào giỏ hàng ở các trang chính
+[1;35m|[m[1;36m\[m  
+[1;35m|[m * [33ma402f85[m feat: done contact, feedback, policy, cải thiện trang Profile, Dashboard admin và API thống kê
+* [1;36m|[m [33mcdae0f9[m xóa bớt thanh tìm kiếm dư thừa khi tìm sản phẩm
+* [1;36m|[m [33maef8d63[m thêm modal để người dùng tùy chọn khi thêm vào giỏ
+[1;36m|[m[1;36m/[m  
+* [33m3a5d6fa[m cho 3 file về lại lúc commit 41cdd62caca1d0d34cf1b927f9428fdf9db9984d
+* [33mcf71e48[m update description product
+* [33m8f6c873[m add detail section
+*   [33mb2cdd28[m fix thêm vào giỏ hàng
+[31m|[m[32m\[m  
+[31m|[m * [33mb51344b[m fix rating products & update ui
+[31m|[m * [33m20f8710[m cập nhật giao diện giỏ hàng
+* [32m|[m [33m672eb6f[m fix thêm vào giỏ hàng (xóa hàm đè alert)
+[32m|[m[32m/[m  
+* [33m41cdd62[m fix images productdetail
+* [33ma26e69e[m cart merge duplicate items, category navigation, wishlist per user
+* [33mb527281[m update product detail
+* [33md038b3b[m update product detail
+* [33mf608da5[m cập nhật giao diện đánh giá khi chưa có đánh giá
+* [33m385e1c2[m add more images to ProductDetail
+*   [33m607869b[m Merge branch 'main' of https://github.com/Banh-ntat/fashion_store
+[33m|[m[34m\[m  
+[33m|[m * [33mb975b28[m cập nhật lại mật khẩu API
+* [34m|[m [33m834e5db[m Connect API Home.tsx, add object image -> Category
+[34m|[m[34m/[m  
+* [33md1b81dd[m cập nhật giao diện đánh giá
+* [33ma199e24[m cập nhật giao diện Profile và wishist
+* [33m66ea821[m update ui checkout
+* [33m0eb40fa[m  update ui cart
+* [33m1c99606[m fix product detail
+* [33m2775796[m update product details ui
+* [33mf085cfa[m update products ui
+* [33me7517f7[m update header, footer ui
+* [33m7bbc8e2[m update homepage ui
+*   [33m9243caa[m Merge pull request #3 from Banh-ntat/feedback-feature
+[35m|[m[36m\[m  
+[35m|[m * [33m66bb5ea[m[33m ([m[1;31morigin/feedback-feature[m[33m)[m update submodule pointer
+[35m|[m * [33m1760304[m update
+* [36m|[m [33md79c685[m Merge pull request #2 from Banh-ntat/feedback-feature
+[1;31m|[m[36m\[m[36m|[m 
+[1;31m|[m * [33md84e4c8[m update feedback feature
+* [1;32m|[m [33m872f530[m Merge pull request #1 from Banh-ntat/feedback-feature
+[1;33m|[m[1;32m\[m[1;32m|[m 
+[1;33m|[m * [33m580ae12[m feat: add feedback system for purchased products
+[1;33m|[m[1;33m/[m  
+* [33m71a328c[m add images
+* [33m3fe3a61[m Enhance checkout flow, product management and UI styling
+* [33m5f5154d[m[33m ([m[1;31morigin/master[m[33m)[m Initial commit - full project
+* [33m7836b32[m[33m ([m[1;31morigin/feature-pages[m[33m)[m update and refractor pages
+* [33m28ea745[m fix nav
+* [33maa8010e[m add pages layout and clean files
+* [33m2a65de7[m[33m ([m[1;31morigin/feature-login-search[m[33m)[m Thêm giao diện đăng nhập và thanh tìm kiếm
+* [33m2ea3e65[m Thêm giao diện đăng nhập và thanh tìm kiếm
+* [33m885e31d[m Clean repo: remove duplicate root folders, keep backend/ and frontend/
+*   [33m4ca5b6b[m Merge branch 'main' of https://github.com/Banh-ntat/fashion_store
+[1;36m|[m[31m\[m  
+[1;36m|[m * [33m3efb885[m setup
+* [33m8183a14[m Initial commit - Fashion Store Ecommerce
+* [33mea2f238[m[33m ([m[1;31morigin/khoakhoa[m[33m)[m setup repo

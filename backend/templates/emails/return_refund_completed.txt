@@ -1,0 +1,15 @@
+Xin chào {{ username }},
+
+Yêu cầu trả hàng #{{ return_id }} cho đơn #{{ order_id }} đã được cửa hàng xử lý xong.
+{% if admin_note %}
+
+Ghi chú từ cửa hàng:
+{{ admin_note }}
+{% endif %}
+
+Nếu áp dụng hoàn tiền, khoản tiền sẽ được chuyển theo phương thức thanh toán / chính sách của cửa hàng trong thời gian quy định.
+
+Xem lại đơn hàng: {{ orders_url }}
+
+Trân trọng,
+FashionStore

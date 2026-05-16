@@ -1,0 +1,49 @@
+.supportSubnav {
+  margin-top: var(--space-lg, 24px);
+}
+
+.supportSubnavList {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-sm, 8px);
+  padding: 0;
+  margin: 0;
+}
+
+.supportSubnavLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border-radius: var(--radius-full, 9999px);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-muted, #6b7280);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--color-border, #eaeaea);
+  text-decoration: none;
+  transition:
+    color var(--transition-fast, 0.15s ease),
+    background var(--transition-fast, 0.15s ease),
+    border-color var(--transition-fast, 0.15s ease),
+    box-shadow var(--transition-fast, 0.15s ease);
+}
+
+.supportSubnavLink:hover {
+  color: var(--color-primary, #f55554);
+  border-color: rgba(245, 85, 84, 0.35);
+  background: #fff;
+}
+
+.supportSubnavLink.is-active {
+  color: #fff;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary, #f55554),
+    var(--color-primary-dark, #d63f3e)
+  );
+  border-color: transparent;
+  box-shadow: var(--shadow-primary, 0 4px 16px rgba(245, 85, 84, 0.35));
+}

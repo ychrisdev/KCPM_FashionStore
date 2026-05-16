@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="MoMo">
+  <rect width="120" height="120" rx="28" fill="#AF006E"/>
+  <text x="26" y="56" fill="#fff" font-family="system-ui,Segoe UI,sans-serif" font-size="32" font-weight="800">m</text>
+  <text x="66" y="56" fill="#fff" font-family="system-ui,Segoe UI,sans-serif" font-size="32" font-weight="800">o</text>
+  <text x="26" y="94" fill="#fff" font-family="system-ui,Segoe UI,sans-serif" font-size="32" font-weight="800">m</text>
+  <text x="66" y="94" fill="#fff" font-family="system-ui,Segoe UI,sans-serif" font-size="32" font-weight="800">o</text>
+</svg>

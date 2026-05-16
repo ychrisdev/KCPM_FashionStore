@@ -1,0 +1,9 @@
+Xin chào {{ username }},
+
+Đơn hàng #{{ order_id }} đã được chuyển sang trạng thái đang giao hàng. Bạn có thể theo dõi đơn tại:
+{{ orders_url }}
+
+Khi nhận được hàng, vui lòng kiểm tra sản phẩm và xác nhận trên trang Đơn hàng của bạn nếu có tùy chọn đó.
+
+Trân trọng,
+FashionStore

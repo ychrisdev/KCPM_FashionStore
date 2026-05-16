@@ -1,0 +1,16 @@
+@import './base/globals.css';
+
+@import './components/Auth.css';
+@import './components/Footer.css';
+@import './components/Header.css';
+@import './components/Layout.css';
+@import './components/ProductDetail.css';
+@import './components/SearchBar.css';
+
+@import './pages/Home.css';
+@import './pages/About.css';
+@import './pages/Policy.css';
+@import './pages/Placeholder.css';
+@import './pages/AuthPages.css';
+@import './pages/Cart.css';
+@import './pages/WalletPage.css';

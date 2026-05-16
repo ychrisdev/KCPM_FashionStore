@@ -1,0 +1,234 @@
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 40px;
+  width: 100%;
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  color: #1e1e1e;
+}
+
+.sectionSubtitle {
+  font-size: 0.95rem;
+  color: #6b6b6b;
+  margin-top: 8px;
+  font-weight: 300;
+  letter-spacing: 0.02em;
+}
+
+.tag,
+.sectionTag {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: var(--space-md);
+}
+
+.hero {
+  min-height: calc(100vh - 80px); /* trừ navbar */
+  display: flex;
+  align-items: center;
+}
+
+.heroInner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: var(--space-3xl);
+  min-height: 480px;
+}
+
+.heroText {
+  text-align: center;
+  margin: 0 auto;
+}
+
+.heroTitle {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 4.5vw, 3.8rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  max-width: 700px;
+  color: var(--color-text);
+  margin-bottom: var(--space-lg);
+  margin: 0 auto;
+}
+
+.heroSubtitle {
+  font-size: 1.05rem;
+  color: var(--color-text-muted);
+  line-height: 1.8;
+  font-weight: 400;
+  max-width: 440px;
+  margin: 0 auto;
+}
+
+.heroImageGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+  animation: fadeIn 0.8s ease both;
+  animation-delay: 0.2s;
+  align-items: center;
+}
+
+.heroImg1 {
+  width: 100%;
+  height: 380px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+}
+
+.heroImg2 {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  align-self: flex-end;
+}
+
+.storySection {
+  background: white;
+  padding: 64px 0;
+}
+
+.storyGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: var(--space-3xl);
+}
+
+.storyImageWrapper {
+  position: relative;
+}
+
+.storyImage {
+  width: 100%;
+  height: 600px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  position: relative;
+  z-index: 1;
+}
+
+.storyImageAccent {
+  position: absolute;
+  inset: -16px 16px 16px -16px;
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  z-index: 0;
+  opacity: 0.3;
+}
+
+.storyTitle {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 3.5vw, 2.8rem);
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--color-text);
+  margin-bottom: var(--space-lg);
+  letter-spacing: -0.01em;
+}
+
+.storyText {
+  font-size: 1rem;
+  color: var(--color-text-muted);
+  line-height: 1.9;
+  font-weight: 300;
+  max-width: 620px;
+  margin-bottom: var(--space-md);
+  text-align: left;
+}
+
+.featuresSection {
+  background: var(--color-bg);
+  padding: 64px 0;
+}
+
+.featureHeader {
+  text-align: center;
+  margin-bottom: var(--space-2xl);
+}
+
+.featuresGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-lg);
+}
+
+.featureCard {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: var(--space-xl);
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  transition:
+    transform var(--transition-slow),
+    box-shadow var(--transition-slow);
+}
+
+.featureCard:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+}
+
+.featureIcon {
+  font-size: 2.5rem;
+  color: var(--color-primary);
+  margin-bottom: var(--space-md);
+  display: block;
+}
+
+.featureTitle {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--space-sm);
+}
+
+.featureDesc {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  line-height: 1.7;
+  font-weight: 300;
+}
+
+@media (max-width: 900px) {
+  .heroInner,
+  .storyGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .heroImageGrid {
+    display: none;
+  }
+
+  .storyImageWrapper {
+    display: none;
+  }
+
+  .featuresGrid,
+  .teamGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .featuresGrid,
+  .teamGrid {
+    grid-template-columns: 1fr;
+  }
+}

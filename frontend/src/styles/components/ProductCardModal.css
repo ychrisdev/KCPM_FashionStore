@@ -1,0 +1,17 @@
+.product-card-modal {
+  --pd-accent: var(--color-primary, #c8102e);
+  --pd-accent-hover: #a50d25;
+  --pd-accent-bg: #fdf5f6;
+  --pd-accent-muted: rgba(200, 16, 46, 0.1);
+  --pd-text: #1a1a1a;
+  --pd-text-secondary: #5a5a5a;
+  --pd-text-light: #8a8a8a;
+  --pd-border: #e2e2e2;
+  --pd-bg: #fff;
+  --pd-bg-surface: #f6f6f6;
+  --pd-radius: 10px;
+  --pd-radius-sm: 6px;
+  --pd-shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.07);
+  --pd-shadow-md: 0 4px 20px rgba(0, 0, 0, 0.1);
+  --pd-transition: 0.18s ease;
+}

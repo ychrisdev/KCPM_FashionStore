@@ -1,0 +1,275 @@
+.my-feedback-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.page-header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  border-bottom: 2px solid #f55554;
+  display: inline-block;
+  padding-bottom: 4px;
+}
+
+.page-desc {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.feedback-section {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.empty-state p {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.empty-state .btn-primary {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 10px 22px;
+  border-radius: 8px;
+  background: #f55554;
+  color: #fff;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.empty-state .btn-primary:hover {
+  opacity: 0.85;
+}
+
+.empty-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  display: block;
+  transition: transform 0.2s;
+}
+
+.empty-icon:hover {
+  transform: scale(1.1);
+}
+.review-card-compact {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  background: #fff;
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
+}
+
+.review-card-compact:hover {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  border-color: #ddd;
+}
+
+.review-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f55554;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.review-main {
+  flex: 1;
+}
+
+.review-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+}
+
+.username {
+  font-weight: 600;
+}
+
+.date {
+  color: #999;
+}
+
+.stars-row {
+  font-size: 0.85rem;
+  color: #ffc107;
+  margin: 4px 0;
+}
+
+.star {
+  color: #ddd;
+}
+
+.star.filled {
+  color: #ffc107;
+}
+
+.review-text {
+  font-size: 0.85rem;
+  color: #444;
+  margin: 4px 0;
+  line-height: 1.4;
+}
+
+.product-attached {
+  margin-top: 6px;
+  padding: 6px 10px;
+  background: #f9f9f9;
+  border-radius: 6px;
+  border: 1px dashed #ddd;
+}
+
+.product-name-mini {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #222;
+}
+
+.feedback-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  background: #fff3e0;
+  color: #e65100;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 2px;
+}
+
+.purchasable-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.btn-review-now {
+  background: #f55554;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  width: 400px;
+}
+
+.modal-product {
+  background: #f7f7f7;
+  padding: 10px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+}
+
+.form-group {
+  margin-bottom: 12px;
+}
+
+textarea,
+select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.star-picker span {
+  font-size: 1.6rem;
+  cursor: pointer;
+  color: #ddd;
+}
+
+.star-picker span.active {
+  color: #ffc107;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.btn-submit {
+  background: #f55554;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+}
+
+.btn-cancel {
+  background: #eee;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+}
+
+/* THÊM VÀO CUỐI FILE */
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin: 16px 0;
+}
+.paginationBtn {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  border: 1px solid #e5e5e5;
+  background: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.15s;
+}
+.paginationBtn:hover:not(:disabled) {
+  border-color: #f55554;
+  color: #f55554;
+}
+.paginationBtn.active {
+  background: #f55554;
+  color: #fff;
+  border-color: #f55554;
+}
+.paginationBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}

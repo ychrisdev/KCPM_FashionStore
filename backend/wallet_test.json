@@ -1,0 +1,23 @@
+[
+  {
+    "model": "wallets.wallet",
+    "pk": 100,
+    "fields": {
+      "user": 1,
+      "balance": "1000000.00",
+      "created_at": "2026-04-20T08:00:00Z"
+    }
+  },
+  {
+    "model": "wallets.wallettransaction",
+    "pk": 100,
+    "fields": {
+      "wallet": 100,
+      "amount": "1000000.00",
+      "type": "deposit",
+      "status": "completed",
+      "description": "Tiền test hệ thống",
+      "created_at": "2026-04-20T08:00:00Z"
+    }
+  }
+]
