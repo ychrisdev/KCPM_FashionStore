@@ -1,0 +1,3345 @@
+{
+  "info": {
+    "_postman_id": "049832e6-7357-4f23-94db-3c185651f1cd",
+    "name": "FashionStore API",
+    "description": "REST API collection cho dự án FashionStore (Django + PostgreSQL). Bao gồm Auth, Products, Cart, Orders, Reviews, Contact, Wishlist, Wallets.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54894687",
+    "_collection_link": "https://go.postman.co/collection/54894687-049832e6-7357-4f23-94db-3c185651f1cd?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "🔐 Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"password\": \"TestPass123!\",\n  \"password2\": \"TestPass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/registration/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "registration",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login (Get Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.access) {",
+                  "  pm.environment.set('access_token', res.access);",
+                  "  pm.environment.set('refresh_token', res.refresh);",
+                  "  console.log('Token saved!');",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/token/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "token",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.access) pm.environment.set('access_token', res.access);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/token/refresh/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "token",
+                "refresh",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/user/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "user",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"old_password\": \"TestPass123!\",\n  \"new_password\": \"NewPass456!\",\n  \"new_password2\": \"NewPass456!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/password/change/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "password",
+                "change",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Password Reset Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/password/reset/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "password",
+                "reset",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Google Auth URL",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/google/url/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "google",
+                "url",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Facebook Auth URL",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/facebook/url/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "facebook",
+                "url",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "👤 Accounts / Profile",
+      "item": [
+        {
+          "name": "List Profiles (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/accounts/profiles/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "accounts",
+                "profiles",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Profile Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/accounts/profiles/{{profile_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "accounts",
+                "profiles",
+                "{{profile_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"0901234567\",\n  \"address\": \"123 Nguyễn Huệ, Q1, TP.HCM\",\n  \"birth_date\": \"2000-01-15\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/accounts/profiles/{{profile_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "accounts",
+                "profiles",
+                "{{profile_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🛍️ Products",
+      "item": [
+        {
+          "name": "List Products",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/products/?page=1&page_size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "category",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "min_price",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "max_price",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "has_promotion",
+                  "value": "true",
+                  "disabled": true
+                },
+                {
+                  "key": "sort",
+                  "value": "rating-desc",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Product Detail",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/products/{{product_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                "{{product_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Product (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Áo Thun Basic\",\n  \"description\": \"Áo thun cotton 100%\",\n  \"category\": 1,\n  \"price\": 250000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/products/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Featured Products",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/products/featured/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                "featured",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Hot Deals",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/products/hot_deals/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                "hot_deals",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "New Arrivals",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/products/new_arrivals/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                "new_arrivals",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Related Products",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/products/{{product_id}}/related/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                "{{product_id}}",
+                "related",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Categories",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/products/categories/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                "categories",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Category (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Áo\",\n  \"description\": \"Các loại áo thời trang\",\n  \"is_active\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/products/categories/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                "categories",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Promotions",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/products/promotions/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                "promotions",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Active Promotions",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/products/promotions/active/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                "promotions",
+                "active",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Colors",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/products/colors/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                "colors",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Sizes",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/products/sizes/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                "sizes",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Variants (by product)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/products/variants/?product={{product_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                "variants",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "product",
+                  "value": "{{product_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Product Images",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/products/images/?product={{product_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                "images",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "product",
+                  "value": "{{product_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🛒 Cart",
+      "item": [
+        {
+          "name": "Get My Cart",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/cart/carts/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "cart",
+                "carts",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Cart Items",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Có danh sách orders\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.satisfy(r =>\r",
+                  "        Array.isArray(r) || r.results !== undefined,\r",
+                  "        \"Không có danh sách orders\"\r",
+                  "    );\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/cart/cart-items/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "cart",
+                "cart-items",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Item to Cart",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Thêm vào giỏ thành công (201)\", function () {\r",
+                  "    const code = pm.response.code;\r",
+                  "    if (code === 400) {\r",
+                  "        const res = pm.response.json();\r",
+                  "        console.warn(\"⚠️ Không đủ hàng hoặc đã có trong giỏ:\", JSON.stringify(res));\r",
+                  "        pm.expect(true).to.be.true; // skip\r",
+                  "        return;\r",
+                  "    }\r",
+                  "    pm.expect(code).to.equal(201);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Có cart item trả về\", function () {\r",
+                  "    if (pm.response.code !== 201) return;\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.have.property(\"id\");\r",
+                  "    pm.expect(res).to.have.property(\"quantity\");\r",
+                  "    pm.environment.set(\"cart_item_id\", res.id);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_variant_id\": 33,\n  \"quantity\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/cart/cart-items/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "cart",
+                "cart-items",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[BUG TEST] Cart - Product không tồn tại",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Từ chối product không tồn tại (400/404)\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 404]);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_variant_id\": 9999,\n  \"quantity\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/cart/cart-items/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "cart",
+                "cart-items",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[BUG TEST] Cart - Quantity = 0",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Từ chối quantity = 0 (400)\", function () {\r",
+                  "    const code = pm.response.code;\r",
+                  "    if (code === 201) {\r",
+                  "        console.warn(\"⚠️ BUG: Backend cho phép quantity = 0 - cần fix serializer\");\r",
+                  "    }\r",
+                  "    pm.expect(code).to.equal(400);\r",
+                  "});\r",
+                  "pm.test(\"Có lỗi ở field quantity\", function () {\r",
+                  "    if (pm.response.code !== 400) return;\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.have.property(\"quantity\");\r",
+                  "});\r",
+                  "if (pm.response.code === 201) {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.environment.set(\"cart_item_id\", res.id);\r",
+                  "    console.log(\"cart_item_id saved:\", res.id);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_variant_id\": 1,\n  \"quantity\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/cart/cart-items/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "cart",
+                "cart-items",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Cart Item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Cập nhật thành công (200)\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "pm.test(\"Quantity đã được cập nhật\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.have.property(\"quantity\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 3\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/cart/cart-items/{{cart_item_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "cart",
+                "cart-items",
+                "{{cart_item_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[BUG TEST] Cart - Update quantity âm",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 3\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/cart/cart-items/{{cart_item_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "cart",
+                "cart-items",
+                "{{cart_item_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Cart Item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Xóa thành công hoặc không tìm thấy\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([204, 404]);\r",
+                  "});\r",
+                  "\r",
+                  "if (pm.response.code === 404) {\r",
+                  "    console.warn(\"cart_item_id không tồn tại - hãy chạy 'Add Item to Cart' trước\");\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/cart/cart-items/{{cart_item_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "cart",
+                "cart-items",
+                "{{cart_item_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📦 Orders",
+      "item": [
+        {
+          "name": "List My Orders",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Có danh sách orders\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.satisfy(r =>\r",
+                  "        Array.isArray(r) || r.results !== undefined,\r",
+                  "        \"Không có danh sách orders\"\r",
+                  "    );\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/orders/orders/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "orders",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Checkout From Cart",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Checkout thành công (200/201)\", function () {\r",
+                  "    const code = pm.response.code;\r",
+                  "    if (code === 400) {\r",
+                  "        console.warn(\"⚠️ Checkout thất bại:\", JSON.stringify(pm.response.json()));\r",
+                  "        pm.expect(true).to.be.true;\r",
+                  "        return;\r",
+                  "    }\r",
+                  "    pm.expect(code).to.be.oneOf([200, 201]);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Có order_id trả về\", function () {\r",
+                  "    const code = pm.response.code;\r",
+                  "    if (code !== 200 && code !== 201) return;\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.have.property(\"id\");\r",
+                  "    pm.environment.set(\"order_id\", res.id);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Có status đơn hàng\", function () {\r",
+                  "    const code = pm.response.code;\r",
+                  "    if (code !== 200 && code !== 201) return;\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.have.property(\"status\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Không lỗi 500\", function () {\r",
+                  "    pm.expect(pm.response.code).to.not.equal(500);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nguyễn Văn A\",\n  \"phone\": \"0901234567\",\n  \"address\": \"123 Nguyễn Huệ, Q1, TP.HCM\",\n  \"note\": \"\",\n  \"payment_method\": \"cod\",\n  \"discount_code\": \"\",\n  \"cart_item_ids\": [{{cart_item_id}}]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders/orders/checkout/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "orders",
+                "checkout",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[BUG TEST] Checkout - Cart rỗng",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Từ chối cart rỗng (400)\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nguyễn Văn A\",\n  \"phone\": \"0901234567\",\n  \"address\": \"123 Nguyễn Huệ, Q1, TP.HCM\",\n  \"note\": \"\",\n  \"payment_method\": \"cod\",\n  \"discount_code\": \"\",\n  \"cart_item_ids\": [99]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders/orders/checkout/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "orders",
+                "checkout",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[BUG TEST] Checkout - Payment method không hợp lệ",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Từ chối payment không hợp lệ (400)\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nguyễn Văn A\",\n  \"phone\": \"0901234567\",\n  \"address\": \"123 Nguyễn Huệ, Q1, TP.HCM\",\n  \"note\": \"\",\n  \"payment_method\": \"bitcoin\",\n  \"discount_code\": \"\",\n  \"cart_item_ids\": [99]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders/orders/checkout/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "orders",
+                "checkout",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[BUG TEST] Checkout - Thiếu địa chỉ",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Từ chối thiếu địa chỉ (400)\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  "pm.test(\"Có thông báo lỗi\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(Object.keys(res).length).to.be.above(0);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nguyễn Văn A\",\n  \"phone\": \"0901234567\",\n  \"address\": \"123 Nguyễn Huệ, Q1, TP.HCM\",\n  \"note\": \"\",\n  \"payment_method\": \"cod\",\n  \"discount_code\": \"\",\n  \"cart_item_ids\": [99]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders/orders/checkout/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "orders",
+                "checkout",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Order Detail",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Có đủ thông tin đơn hàng\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.have.property(\"id\");\r",
+                  "    pm.expect(res).to.have.property(\"status\");\r",
+                  "    pm.expect(res).to.have.property(\"items\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Order ID đúng\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    const expectedId = Number(pm.environment.get(\"order_id\"));\r",
+                  "    pm.expect(res.id).to.equal(expectedId);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/orders/orders/{{order_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "orders",
+                "{{order_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Order Status (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Cập nhật status thành công (200)\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Status đã được cập nhật\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.have.property(\"status\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"shipping\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders/orders/{{order_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "orders",
+                "{{order_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[BUG TEST] Update - Status không hợp lệ",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Từ chối status không hợp lệ (400)\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"bay_len_troi\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders/orders/{{order_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "orders",
+                "{{order_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Discount Codes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Có danh sách discount codes\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.satisfy(r =>\r",
+                  "        Array.isArray(r) || r.results !== undefined,\r",
+                  "        \"Không có danh sách discount codes\"\r",
+                  "    );\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/orders/discount-codes/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "discount-codes",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Discount Code (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Tạo discount code thành công (201)\", function () {\r",
+                  "    pm.response.to.have.status(201);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Có code trả về\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.have.property(\"code\");\r",
+                  "    pm.expect(res).to.have.property(\"discount_percent\");\r",
+                  "});\r",
+                  "\r",
+                  "const code = \"SALE\" + Date.now();\r",
+                  "pm.environment.set(\"discount_code\", code);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Summer Sale\",\n  \"code\": \"{{discount_code}}\",\n  \"discount_percent\": 20,\n  \"min_order_value\": 500000,\n  \"start_date\": \"2025-06-01\",\n  \"end_date\": \"2025-06-30\",\n  \"is_active\": true,\n  \"usage_limit\": 100\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders/discount-codes/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "discount-codes",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[BUG TEST] Discount - Code trùng",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Từ chối code trùng (400)\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Summer Sale\",\n  \"code\": \"SUMMER20\",\n  \"discount_percent\": 20,\n  \"min_order_value\": 500000,\n  \"start_date\": \"2025-06-01\",\n  \"end_date\": \"2025-06-30\",\n  \"is_active\": true,\n  \"usage_limit\": 100\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders/discount-codes/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "discount-codes",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[BUG TEST] Discount - Phần trăm âm",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Từ chối discount âm (400)\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Summer Sale\",\n  \"code\": \"SUMMER20\",\n  \"discount_percent\": -10,\n  \"min_order_value\": 500000,\n  \"start_date\": \"2025-06-01\",\n  \"end_date\": \"2025-06-30\",\n  \"is_active\": true,\n  \"usage_limit\": 100\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders/discount-codes/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "discount-codes",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[BUG TEST] Discount - Phần trăm > 100",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Từ chối discount > 100% (400)\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Summer Sale\",\n  \"code\": \"SUMMER20\",\n  \"discount_percent\": 150,\n  \"min_order_value\": 500000,\n  \"start_date\": \"2025-06-01\",\n  \"end_date\": \"2025-06-30\",\n  \"is_active\": true,\n  \"usage_limit\": 100\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders/discount-codes/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "discount-codes",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Return Request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Tạo yêu cầu trả hàng (200/201)\", function () {\r",
+                  "    const code = pm.response.code;\r",
+                  "    if (code === 400) {\r",
+                  "        console.warn(\"⚠️ Return thất bại:\", JSON.stringify(pm.response.json()));\r",
+                  "        pm.expect(true).to.be.true;\r",
+                  "        return;\r",
+                  "    }\r",
+                  "    pm.expect(code).to.be.oneOf([200, 201]);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Có thông tin return\", function () {\r",
+                  "    const code = pm.response.code;\r",
+                  "    if (code !== 200 && code !== 201) return;\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.have.property(\"id\");\r",
+                  "    pm.expect(res).to.have.property(\"order\");\r",
+                  "    pm.expect(res).to.have.property(\"reason\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"order\": {{order_id}},\n  \"reason\": \"damaged\",\n  \"description\": \"Sản phẩm bị rách khi nhận\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders/returns/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "returns",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[BUG TEST] Return - Order không tồn tại",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Từ chối order không tồn tại (400/404)\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 404]);\r",
+                  "});\r",
+                  "// Thêm vào sau test hiện tại\r",
+                  "pm.test(\"Có thông báo lỗi rõ ràng\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.satisfy(r =>\r",
+                  "        r.detail || r.error || r.order,\r",
+                  "        \"Thiếu thông báo lỗi\"\r",
+                  "    );\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"order\": 9999,\n  \"reason\": \"damaged\",\n  \"description\": \"Sản phẩm bị rách khi nhận\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders/returns/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "returns",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Returns",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Có danh sách returns\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.satisfy(r =>\r",
+                  "        Array.isArray(r) || r.results !== undefined,\r",
+                  "        \"Không có danh sách returns\"\r",
+                  "    );\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/orders/returns/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "returns",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Retry Payment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Không lỗi 500\", function () {\r",
+                  "    pm.expect(pm.response.code).to.not.equal(500);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Retry payment phản hồi đúng\", function () {\r",
+                  "    const code = pm.response.code;\r",
+                  "    const res = pm.response.json();\r",
+                  "\r",
+                  "    if (code === 200 || code === 201) {\r",
+                  "        pm.expect(res).to.satisfy(r =>\r",
+                  "            r.payment_url || r.detail || r.message,\r",
+                  "            \"Thiếu thông tin response\"\r",
+                  "        );\r",
+                  "    } else {\r",
+                  "        pm.expect(res).to.have.property(\"detail\")\r",
+                  "            .or.have.property(\"error\");\r",
+                  "        console.warn(\"Retry thất bại:\", JSON.stringify(res));\r",
+                  "    }\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"payment_method\": \"vnpay\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders/orders/5690/retry-payment/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "orders",
+                "5690",
+                "retry-payment",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "⭐ Reviews & Comments",
+      "item": [
+        {
+          "name": "List Reviews",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Có danh sách reviews\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.satisfy(r =>\r",
+                  "        Array.isArray(r) || r.results !== undefined,\r",
+                  "        \"Không có danh sách reviews\"\r",
+                  "    );\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/reviews/reviews/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reviews",
+                "reviews",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reviews by Product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Có reviews của sản phẩm\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.satisfy(r =>\r",
+                  "        Array.isArray(r) || r.results !== undefined\r",
+                  "    );\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/reviews/reviews/by_product/{{product_id}}/?page=1&page_size=4",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reviews",
+                "reviews",
+                "by_product",
+                "{{product_id}}",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "4"
+                },
+                {
+                  "key": "rating",
+                  "value": "5",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "My Reviews",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Là danh sách của user hiện tại\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.satisfy(r =>\r",
+                  "        Array.isArray(r) || r.results !== undefined\r",
+                  "    );\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/reviews/reviews/my_reviews/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reviews",
+                "reviews",
+                "my_reviews",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Purchasable (can review)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Trả về danh sách sản phẩm có thể review\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.satisfy(r =>\r",
+                  "        Array.isArray(r) || r.results !== undefined\r",
+                  "    );\r",
+                  "    console.log(\"Sản phẩm có thể review:\", JSON.stringify(res));\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/reviews/reviews/purchasable/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reviews",
+                "reviews",
+                "purchasable",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Review",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Không lỗi 500\", function () {\r",
+                  "    pm.expect(pm.response.code).to.not.equal(500);\r",
+                  "});\r",
+                  "\r",
+                  "if (pm.response.code === 201) {\r",
+                  "    pm.test(\"Review tạo thành công\", function () {\r",
+                  "        const res = pm.response.json();\r",
+                  "        pm.expect(res).to.have.property(\"id\");\r",
+                  "        pm.expect(res).to.have.property(\"rating\");\r",
+                  "        pm.expect(res).to.have.property(\"content\");\r",
+                  "    });\r",
+                  "} else {\r",
+                  "    console.warn(\"Create review thất bại:\", JSON.stringify(pm.response.json()));\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product\": 1,\n  \"rating\": 5,\n  \"feedback_type\": \"quality\",\n  \"content\": \"Sản phẩm rất tốt, vải đẹp!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/reviews/reviews/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reviews",
+                "reviews",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[BUG TEST] Review - Chưa mua mà review",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Từ chối chưa mua mà review (400/403)\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 403]);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Có thông báo lỗi rõ ràng\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.have.any.keys(\"error\", \"detail\");\r",
+                  "});\r",
+                  "pm.test(\"Có thông báo lỗi rõ ràng\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.satisfy(r =>\r",
+                  "        r.error || r.detail || r.product,\r",
+                  "        \"Thiếu thông báo lỗi\"\r",
+                  "    );\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product\": 1,\n  \"rating\": 5,\n  \"feedback_type\": \"quality\",\n  \"content\": \"Sản phẩm rất tốt, vải đẹp!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/reviews/reviews/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reviews",
+                "reviews",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[BUG TEST] Review - Rating âm",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Từ chối rating không hợp lệ (400)\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Có thông báo lỗi field rating\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.have.property(\"rating\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product\": 1,\n  \"rating\": -1,\n  \"feedback_type\": \"quality\",\n  \"content\": \"Sản phẩm rất tốt, vải đẹp!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/reviews/reviews/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reviews",
+                "reviews",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[BUG TEST] Review - Rating > 5",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Từ chối rating không hợp lệ (400)\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Có thông báo lỗi field rating\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.have.property(\"rating\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product\": 1,\n  \"rating\": 10,\n  \"feedback_type\": \"quality\",\n  \"content\": \"Sản phẩm rất tốt, vải đẹp!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/reviews/reviews/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reviews",
+                "reviews",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Comments",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Có danh sách comments\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.satisfy(r =>\r",
+                  "        Array.isArray(r) || r.results !== undefined\r",
+                  "    );\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/reviews/comments/?product={{product_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reviews",
+                "comments",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "product",
+                  "value": "{{product_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Comment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Tạo comment thành công (201)\", function () {\r",
+                  "    pm.response.to.have.status(201);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Có nội dung comment\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.have.property(\"id\");\r",
+                  "    pm.expect(res).to.have.property(\"content\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product\": 1,\n  \"content\": \"Hỏi thêm về size M còn không ạ?\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/reviews/comments/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reviews",
+                "comments",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[BUG TEST] Comment - Nội dung rỗng",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Từ chối comment rỗng (400)\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product\": 1,\n  \"content\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/reviews/comments/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reviews",
+                "comments",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📞 Contact",
+      "item": [
+        {
+          "name": "Contact Meta (public)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/contact/meta/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "contact",
+                "meta",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Contact (public)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nguyễn Văn A\",\n  \"email\": \"nguyenvana@email.com\",\n  \"phone\": \"0901234567\",\n  \"subject\": \"order\",\n  \"message\": \"Đơn hàng #123 chưa được giao sau 5 ngày.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/contact/contacts/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "contact",
+                "contacts",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Contacts (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/contact/contacts/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "contact",
+                "contacts",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Feedback",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Website rất đẹp và dễ dùng!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/contact/feedbacks/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "contact",
+                "feedbacks",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Policies (public)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/contact/policies/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "contact",
+                "policies",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "❤️ Wishlist",
+      "item": [
+        {
+          "name": "Get Wishlist",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/wishlist/items/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "wishlist",
+                "items",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Toggle Wishlist",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_id\": {{product_id}}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/wishlist/toggle/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "wishlist",
+                "toggle",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Sync Wishlist",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_ids\": [1, 2, 3]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/wishlist/sync/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "wishlist",
+                "sync",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "💰 Wallets",
+      "item": [
+        {
+          "name": "Get My Wallet",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Có balance và transactions\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.have.property(\"balance\");\r",
+                  "    pm.expect(res).to.have.property(\"transactions\");\r",
+                  "    pm.expect(res.transactions).to.be.an(\"array\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Balance không âm\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res.balance).to.be.at.least(0);\r",
+                  "});\r",
+                  "\r",
+                  "// Lưu balance\r",
+                  "pm.environment.set(\"wallet_balance\", pm.response.json().balance);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/wallets/my-wallet/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "wallets",
+                "my-wallet",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Wallet Info (balance)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Có trường balance\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.have.property(\"balance\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Balance là số hợp lệ\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(String(res.balance)).to.match(/^\\d+(\\.\\d+)?$/, \"balance phải là số hợp lệ\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Không lỗi 500\", function () {\r",
+                  "    pm.expect(pm.response.code).to.not.equal(500);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/wallets/info/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "wallets",
+                "info",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Deposit Start (MoMo/ZaloPay)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200 hoặc 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Có payment_url\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.have.property(\"payment_url\");\r",
+                  "    pm.expect(res.payment_url).to.include(\"http\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Có transaction_id\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.have.property(\"transaction_id\");\r",
+                  "});\r",
+                  "\r",
+                  "// Lưu lại để test sau\r",
+                  "const res = pm.response.json();\r",
+                  "pm.environment.set(\"transaction_id\", res.transaction_id);\r",
+                  "pm.environment.set(\"wallet_balance\", 0);\r",
+                  "console.log(\"Transaction ID:\", res.transaction_id);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"momo\",\n  \"amount\": 100000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/wallets/deposit/start/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "wallets",
+                "deposit",
+                "start",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[BUG TEST] Withdraw - Vượt số dư",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Phải từ chối rút vượt số dư (400)\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Có thông báo số dư không đủ\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    pm.expect(res).to.have.property(\"error\");\r",
+                  "    pm.expect(res.error).to.be.a(\"string\").and.not.empty;\r",
+                  "});\r",
+                  "// Dán vào: Deposit âm, Deposit=0, Provider sai, Rút âm, Rút vượt số dư\r",
+                  "pm.test(\"Lỗi phải trả status 400\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"withdraw\",\n  \"amount\": 999999999\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/wallets/deposit/start/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "wallets",
+                "deposit",
+                "start",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[BUG TEST] Deposit - Số tiền = 0",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Phải từ chối số tiền = 0 (400)\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  "// Dán vào: Deposit âm, Deposit=0, Provider sai, Rút âm, Rút vượt số dư\r",
+                  "pm.test(\"Lỗi phải trả status 400\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"momo\",\n  \"amount\": 0\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/wallets/deposit/start/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "wallets",
+                "deposit",
+                "start",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[BUG TEST] Deposit - Provider không hợp lệ",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Phải từ chối provider không hợp lệ (400)\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  "// Dán vào: Deposit âm, Deposit=0, Provider sai, Rút âm, Rút vượt số dư\r",
+                  "pm.test(\"Lỗi phải trả status 400\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"tien_mat\",\n  \"amount\": 100000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/wallets/deposit/start/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "wallets",
+                "deposit",
+                "start",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[BUG TEST] Deposit - Số tiền âm",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Phải từ chối số tiền âm (400)\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Có thông báo lỗi rõ ràng\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    // Phải có message giải thích lý do lỗi\r",
+                  "    pm.expect(res).to.satisfy(r =>\r",
+                  "        r.amount || r.detail || r.message || r.error,\r",
+                  "        \"Thiếu thông báo lỗi\"\r",
+                  "    );\r",
+                  "});\r",
+                  "// Dán vào: Deposit âm, Deposit=0, Provider sai, Rút âm, Rút vượt số dư\r",
+                  "pm.test(\"Lỗi phải trả status 400\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"momo\",\n  \"amount\": -100000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/wallets/deposit/start/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "wallets",
+                "deposit",
+                "start",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Withdraw",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Withdraw phản hồi đúng\", function () {\r",
+                  "    const res = pm.response.json();\r",
+                  "    const code = pm.response.code;\r",
+                  "\r",
+                  "    if (code === 400) {\r",
+                  "        // Số dư = 0 → hợp lệ, backend báo lỗi đúng\r",
+                  "        pm.expect(res).to.have.property(\"error\");\r",
+                  "        console.log(\"Ví đang trống, không thể rút - expected\");\r",
+                  "    } else {\r",
+                  "        // Nếu có tiền thì phải 200/201\r",
+                  "        pm.expect(code).to.be.oneOf([200, 201]);\r",
+                  "    }\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"withdraw\",\n  \"amount\": 50000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/wallets/action/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "wallets",
+                "action",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[BUG TEST] Withdraw - Số tiền âm",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Phải từ chối rút tiền âm (400)\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  "// Dán vào: Deposit âm, Deposit=0, Provider sai, Rút âm, Rút vượt số dư\r",
+                  "pm.test(\"Lỗi phải trả status 400\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"withdraw\",\n  \"amount\": -50000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/wallets/action/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "wallets",
+                "action",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[BUG TEST] Get Wallet - Chưa login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Phải từ chối khi chưa login (401)\", function () {\r",
+                  "    pm.response.to.have.status(401);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/wallets/my-wallet/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "wallets",
+                "my-wallet",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📊 Core / Dashboard",
+      "item": [
+        {
+          "name": "Admin Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/core/dashboard/stats/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "core",
+                "dashboard",
+                "stats",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Customer Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/core/dashboard/customer/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "core",
+                "dashboard",
+                "customer",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ]
+}

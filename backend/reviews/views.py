@@ -1,4 +1,4 @@
-from rest_framework import permissions, viewsets, status
+from rest_framework import permissions, viewsets, status, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
@@ -50,7 +50,46 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return qs.filter(is_visible=True)
 
     def perform_create(self, serializer):
-        review = serializer.save(user=self.request.user)
+        user = self.request.user
+        product_variant = serializer.validated_data.get("product")
+
+        # Kiểm tra đã mua chưa
+        has_purchased = OrderItem.objects.filter(
+            order__user=user,
+            order__status="completed",
+            product=product_variant,
+        ).exists()
+
+        if not has_purchased:
+            raise serializers.ValidationError(
+                {"detail": "Bạn cần mua sản phẩm này trước khi đánh giá."}
+            )
+
+        # Kiểm tra đã review chưa
+        already_reviewed = Review.objects.filter(
+            user=user,
+            product=product_variant,
+        ).exists()
+
+        if already_reviewed:
+            raise serializers.ValidationError(
+                {"detail": "Bạn đã đánh giá sản phẩm này rồi."}
+            )
+
+        # Kiểm tra còn trong 14 ngày không
+        order_item = OrderItem.objects.filter(
+            order__user=user,
+            order__status="completed",
+            product=product_variant,
+        ).select_related("order").order_by("-order__created_at").first()
+
+        days_since = (timezone.now() - order_item.order.created_at).days
+        if days_since > 14:
+            raise serializers.ValidationError(
+                {"detail": "Thời hạn đánh giá 14 ngày đã hết."}
+            )
+
+        review = serializer.save(user=user)
         _recalc_product_rating(review.product)
         
     def perform_update(self, serializer):

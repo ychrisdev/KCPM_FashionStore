@@ -20,7 +20,7 @@ class CartItemSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False,
     )
-    quantity = serializers.IntegerField(min_value=1, default=1)
+    quantity = serializers.IntegerField(min_value=1)
     stock = serializers.IntegerField(source="product.stock", read_only=True)
 
     class Meta:

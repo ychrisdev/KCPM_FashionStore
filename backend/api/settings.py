@@ -112,7 +112,7 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': _db_engine,
-            'NAME': os.getenv('DB_NAME', 'nt4'),
+            'NAME': os.getenv('DB_NAME', 'kcpm_fashionstore'),
             'USER': os.getenv('DB_USER', 'postgres'),
             'PASSWORD': os.getenv('DB_PASSWORD', '123456'),
             'HOST': os.getenv('DB_HOST', 'localhost'),

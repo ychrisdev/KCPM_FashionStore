@@ -62,3 +62,17 @@ API: `http://127.0.0.1:8000/api/`
 
 ### Lỗi Invalid Scopes: email (Facebook)
 Ứng dụng đã chuyển sang chỉ dùng scope `public_profile`; email được xử lý tự động nếu Facebook không trả về.
+
+## Hướng dẫn chạy Postman
+
+1. Import file `FashionStore_API_postman_collection.json`
+2. Tạo Environment mới với các biến:
+   - `base_url`: http://127.0.0.1:8000
+   - `access_token`: để trống
+   - `refresh_token`: để trống
+   - `order_id`: để trống
+   - `cart_item_id`: để trống
+   - `product_id`: để trống
+   - `transaction_id`: để trống
+3. Chạy request **Login (Get Token)** trước để lấy token
+4. Chạy các request còn lại
