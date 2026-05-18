@@ -4,7 +4,7 @@
     "name": "FashionStore API",
     "description": "REST API collection cho dự án FashionStore (Django + PostgreSQL). Bao gồm Auth, Products, Cart, Orders, Reviews, Contact, Wishlist, Wallets.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "54894687",
+    "_exporter_id": "54965186",
     "_collection_link": "https://go.postman.co/collection/54894687-049832e6-7357-4f23-94db-3c185651f1cd?source=collection_link"
   },
   "item": [
@@ -23,7 +23,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"password\": \"TestPass123!\",\n  \"password2\": \"TestPass123!\"\n}"
+              "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"password\": \"TestPass123!\",\n  \"password_confirm\": \"TestPass123!\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/auth/registration/",
@@ -97,7 +97,9 @@
                   "const res = pm.response.json();",
                   "if (res.access) pm.environment.set('access_token', res.access);"
                 ],
-                "type": "text/javascript"
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
               }
             }
           ],
@@ -161,7 +163,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"old_password\": \"TestPass123!\",\n  \"new_password\": \"NewPass456!\",\n  \"new_password2\": \"NewPass456!\"\n}"
+              "raw": "{\n  \"old_password\": \"TestPass123!\",\n  \"new_password\": \"NewPass456!\",\n  \"new_password_confirm\": \"NewPass456!\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/auth/password/change/",
@@ -245,6 +247,79 @@
                 "auth",
                 "facebook",
                 "url",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Google Callback",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"code\": \"xxx\",\r\n    \"redirect_uri\": \"http://localhost:5173/auth/google/callback\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/google/callback/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "google",
+                "callback",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Facebook Callback",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"code\": \"xxx\",\r\n    \"redirect_uri\": \"http://localhost:5173/auth/facebook/callback\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/facebook/callback/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "facebook",
+                "callback",
                 ""
               ]
             }

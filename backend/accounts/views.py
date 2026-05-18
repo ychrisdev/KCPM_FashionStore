@@ -453,8 +453,14 @@ class GoogleCallbackView(APIView):
             user = User.objects.filter(email=email).first()
 
             if user:
-                # Update existing user with Google info
-                profile = Profile.objects.get(user=user)
+                profile, _ = Profile.objects.get_or_create(
+                    user=user,
+                    defaults={
+                        "phone": "",
+                        "address": "",
+                        "role": RoleChoices.CUSTOMER,
+                    }
+                )
                 profile.google_id = google_id
                 profile.save()
             else:
