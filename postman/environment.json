@@ -4,7 +4,7 @@
 	"values": [
 		{
 			"key": "base_url",
-			"value": "http://192.168.235.1",
+			"value": "http://host.docker.internal:8000",
 			"type": "default",
 			"enabled": true
 		},
