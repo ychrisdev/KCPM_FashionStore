@@ -1116,7 +1116,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"phone\": \"0901234567\",\n  \"address\": \"123 Nguyễn Huệ, Q1, TP.HCM\",\n  \"birth_date\": \"2000-01-15\"\n}"
+              "raw": "{\n  \"phone\": \"090123456\",\n  \"address\": \"123 Nguyễn Huệ, Q1, TP.HCM\",\n  \"birth_date\": \"2000-01-15\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/accounts/profiles/{{profile_id}}/",
@@ -7124,6 +7124,11 @@
               }
             }
           ],
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {
+              "content-type": true
+            }
+          },
           "request": {
             "auth": {
               "type": "noauth"
@@ -7137,7 +7142,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"product\": 1,\n  \"content\": \"Hỏi thêm về size M còn không ạ?\"\n}"
+              "raw": "{\n  \"product\": 46,\n  \"content\": \"Hỏi thêm về size M còn không ạ?\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/reviews/comments/",
@@ -8561,6 +8566,62 @@
         },
         {
           "name": "Customer Dashboard",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC01 - Kiểm tra status code 200\r",
+                  "pm.test(\"TC01 - Status code là 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "// TC02 - Kiểm tra response có dữ liệu JSON\r",
+                  "pm.test(\"TC02 - Response có dữ liệu JSON\", function () {\r",
+                  "    pm.response.to.be.json;\r",
+                  "});\r",
+                  "\r",
+                  "// TC03 - Kiểm tra có đủ các field bắt buộc\r",
+                  "pm.test(\"TC03 - Có đủ các field bắt buộc\", function () {\r",
+                  "    var json = pm.response.json();\r",
+                  "    pm.expect(json).to.have.property(\"orders_total\");\r",
+                  "    pm.expect(json).to.have.property(\"orders_by_status\");\r",
+                  "    pm.expect(json).to.have.property(\"recent_orders\");\r",
+                  "    pm.expect(json).to.have.property(\"cart_item_count\");\r",
+                  "    pm.expect(json).to.have.property(\"wishlist_count\");\r",
+                  "});\r",
+                  "\r",
+                  "// TC04 - Kiểm tra orders_total không âm\r",
+                  "pm.test(\"TC04 - orders_total không âm\", function () {\r",
+                  "    var json = pm.response.json();\r",
+                  "    pm.expect(json.orders_total).to.be.at.least(0);\r",
+                  "});\r",
+                  "\r",
+                  "// TC05 - Kiểm tra cart_item_count không âm\r",
+                  "pm.test(\"TC05 - cart_item_count không âm\", function () {\r",
+                  "    var json = pm.response.json();\r",
+                  "    pm.expect(json.cart_item_count).to.be.at.least(0);\r",
+                  "});\r",
+                  "\r",
+                  "// TC06 - Kiểm tra wishlist_count không âm\r",
+                  "pm.test(\"TC06 - wishlist_count không âm\", function () {\r",
+                  "    var json = pm.response.json();\r",
+                  "    pm.expect(json.wishlist_count).to.be.at.least(0);\r",
+                  "});\r",
+                  "\r",
+                  "// TC07 - Kiểm tra orders_daily_7d có 7 ngày\r",
+                  "pm.test(\"TC07 - orders_daily_7d có đúng 7 ngày\", function () {\r",
+                  "    var json = pm.response.json();\r",
+                  "    pm.expect(json.orders_daily_7d).to.be.an(\"array\");\r",
+                  "    pm.expect(json.orders_daily_7d.length).to.eql(7);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [],
