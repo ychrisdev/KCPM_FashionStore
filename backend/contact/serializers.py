@@ -9,6 +9,13 @@ class ContactSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "email", "phone", "subject", "message", "handled", "created_at")
         read_only_fields = ("created_at",)
 
+    def validate_message(self, value):
+        if len(value) < 10:
+            raise serializers.ValidationError("Tin nhắn phải có ít nhất 10 ký tự.")
+        if len(value) > 500:
+            raise serializers.ValidationError("Tin nhắn không được vượt quá 500 ký tự.")
+        return value
+
     def create(self, validated_data):
         validated_data.pop("handled", None)
         return super().create(validated_data)
