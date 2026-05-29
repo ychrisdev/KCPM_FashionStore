@@ -11,7 +11,13 @@ pipeline {
         stage('Backend - Install') {
             steps {
                 dir('backend') {
-                    sh 'pip3 install -r requirements.txt --break-system-packages'
+                    sh '''
+                        apt-get update -y
+                        apt-get install -y python3 python3-pip python3-venv
+                        python3 -m venv .venv
+                        . .venv/bin/activate
+                        pip install -r requirements.txt
+                    '''
                 }
             }
         }
@@ -19,7 +25,10 @@ pipeline {
         stage('Backend - Test') {
             steps {
                 dir('backend') {
-                    sh 'python3 manage.py test'
+                    sh '''
+                        . .venv/bin/activate
+                        python3 manage.py test
+                    '''
                 }
             }
         }
