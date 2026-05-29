@@ -32,6 +32,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ("update", "partial_update"):
             return [permissions.IsAuthenticated(), IsAdminOrStaff()]
+        if self.action == "create":
+            return [permissions.IsAuthenticated()]
         return [permissions.IsAuthenticatedOrReadOnly()]
 
     def get_queryset(self):
@@ -190,8 +192,12 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     filterset_fields = ["product"]
+
+    def get_permissions(self):
+        if self.action in ("list", "retrieve"):
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated()]
 
     def get_queryset(self):
         return Comment.objects.select_related("user", "product").all().order_by("-created_at")
@@ -200,7 +206,6 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
     def destroy(self, request, *args, **kwargs):
-        """Allow admin to delete any comment, others can only delete their own"""
         instance = self.get_object()
         if is_admin(request.user) or instance.user == request.user:
             return super().destroy(request, *args, **kwargs)
