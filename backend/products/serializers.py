@@ -307,6 +307,11 @@ class ProductSerializer(serializers.ModelSerializer):
             data["promotion"] = None
         return data
     
+    def validate_price(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Giá sản phẩm phải lớn hơn 0.")
+        return value
+    
     def validate_promotion_id(self, value):
         if value is not None and not value.is_active:
             raise serializers.ValidationError(
