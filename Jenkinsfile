@@ -11,7 +11,7 @@ pipeline {
         stage('Backend - Install') {
             steps {
                 dir('backend') {
-                    sh 'pip install -r requirements.txt --break-system-packages'
+                    sh 'pip3 install -r requirements.txt --break-system-packages'
                 }
             }
         }
@@ -19,7 +19,7 @@ pipeline {
         stage('Backend - Test') {
             steps {
                 dir('backend') {
-                    sh 'python manage.py test'
+                    sh 'python3 manage.py test'
                 }
             }
         }
