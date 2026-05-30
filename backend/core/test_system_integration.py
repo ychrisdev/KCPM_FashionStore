@@ -145,6 +145,9 @@ class SystemApiIntegrationTests(TestCase):
         self.assertEqual(co.status_code, status.HTTP_201_CREATED, co.data)
         order_id = co.data.get("id")
         self.assertIsNotNone(order_id)
+        
+        from orders.models import Order
+        Order.objects.filter(pk=order_id).update(status="completed")
 
         orders = self.client.get("/api/orders/orders/")
         self.assertEqual(orders.status_code, status.HTTP_200_OK)
