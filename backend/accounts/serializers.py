@@ -215,10 +215,14 @@ class ChangePasswordSerializer(serializers.Serializer):
         return value
 
 
+from django.utils import timezone
+
 class ProfileSerializer(serializers.ModelSerializer):
     avatar = serializers.ImageField(required=False)
     user = ProfileUserSerializer()
     role = serializers.ChoiceField(choices=RoleChoices.CHOICES, required=False)
+    address = serializers.CharField(required=False, allow_blank=True, max_length=255)
+    birth_date = serializers.DateField(required=False, allow_null=True)
 
     class Meta:
         model = Profile
@@ -237,6 +241,11 @@ class ProfileSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("google_id", "facebook_id", "created_at", "updated_at")
 
+    def validate_birth_date(self, value):
+        if value and value > timezone.localdate():
+            raise serializers.ValidationError("Ngày sinh không được là ngày tương lai.")
+        return value
+
     def validate(self, attrs):
         request = self.context.get("request")
         if request and not can_manage_profile_roles(request.user):
@@ -245,18 +254,15 @@ class ProfileSerializer(serializers.ModelSerializer):
                     {"role": "Chỉ quản trị viên mới được thay đổi vai trò."}
                 )
         return attrs
-    
+
     def update(self, instance, validated_data):
         request = self.context.get("request")
         if request and not can_manage_profile_roles(request.user):
             validated_data.pop("role", None)
-        new_bd = validated_data.get("birth_date", serializers.empty)
-        # Ngăn việc khách hàng đổi ngày sinh để nhận lại mã trong cùng 1 năm
-        # Việc KHÔNG set lại cờ này thành None đảm bảo mỗi tài khoản chỉ nhận được 1 lần/lên 1 năm dương lịch.
         user_data = validated_data.pop("user", None)
         instance = super().update(instance, validated_data)
         if user_data is not None:
-            user_ser = ProfileUserSerializer(   
+            user_ser = ProfileUserSerializer(
                 instance=instance.user,
                 data=user_data,
                 partial=True,
@@ -265,7 +271,6 @@ class ProfileSerializer(serializers.ModelSerializer):
             user_ser.is_valid(raise_exception=True)
             user_ser.save()
         return instance
-
 
 class BirthdayEmailTemplateSerializer(serializers.ModelSerializer):
     discount_code_detail = serializers.SerializerMethodField(read_only=True)
