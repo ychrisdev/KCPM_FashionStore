@@ -121,12 +121,15 @@ def birthday_email_from_template(
     birthday_date: date,
     template: BirthdayEmailTemplate | None = None,
     custom_discount: Any | None = None,
+    env_voucher_fallback: str = "",
 ) -> tuple[str, str, str]:
     tmpl = template or BirthdayEmailTemplate.get_solo()
-    env_fb = (getattr(settings, "BIRTHDAY_VOUCHER_CODE", "") or "").strip()
-    
-    dc = custom_discount if custom_discount else (tmpl.discount_code if getattr(tmpl, "discount_code_id", None) else None)
-    
+    env_fb = env_voucher_fallback or (getattr(settings, "BIRTHDAY_VOUCHER_CODE", "") or "").strip()
+
+    dc = custom_discount if custom_discount else (
+        tmpl.discount_code if getattr(tmpl, "discount_code_id", None) else None
+    )
+
     subject, ctx = build_birthday_template_context(
         display_name=display_name,
         birthday_date=birthday_date,
@@ -146,6 +149,11 @@ def send_birthday_reminder_emails(explain: list[str] | None = None) -> tuple[int
     Gửi email nhắc (trước 1 ngày) cho khách có sinh nhật ngày mai.
     Trả về (đã gửi, bỏ qua/lỗi không tăng sent — chỉ đếm gửi thành công).
     Nếu truyền explain (list), append ly do bo qua (ASCII, cho console Windows).
+
+    Thứ tự ưu tiên mã giảm giá:
+      1. Admin chọn mã cụ thể trong BirthdayEmailTemplate.discount_code
+      2. Biến env BIRTHDAY_VOUCHER_CODE (chuỗi tĩnh, không tạo DB row)
+      3. Tạo mã cá nhân HBD_{EMAIL_PREFIX} (fallback cuối cùng)
     """
     def _note(msg: str) -> None:
         if explain is not None:
@@ -165,6 +173,7 @@ def send_birthday_reminder_emails(explain: list[str] | None = None) -> tuple[int
 
     tomorrow = _tomorrow_local()
     tmpl = BirthdayEmailTemplate.get_solo()
+    env_fb = (getattr(settings, "BIRTHDAY_VOUCHER_CODE", "") or "").strip()
 
     sent = 0
     skipped = 0
@@ -187,35 +196,49 @@ def send_birthday_reminder_emails(explain: list[str] | None = None) -> tuple[int
             continue
 
         display_name = (user.get_full_name() or "").strip() or user.username
-        
-        email_prefix = to_email.split('@')[0].upper()
-        voucher_code = f"HBD_{email_prefix}"
-        
-        discount_percent = 10
+
         if getattr(tmpl, "discount_code_id", None) and tmpl.discount_code:
-            discount_percent = tmpl.discount_code.discount_percent
-            
-        discount_code_obj, created = DiscountCode.objects.get_or_create(
-            code=voucher_code,
-            defaults={
-                "name": f"Sinh nhật {display_name}",
-                "discount_percent": discount_percent,
-                "min_order_value": 0,
-                "start_date": tomorrow,
-                "end_date": tomorrow,
-                "usage_limit": 1,
-                "is_active": True,
-                "used_count": 0,
-            }
-        )
-        if not created:
-            if discount_code_obj.start_date != tomorrow or discount_code_obj.end_date != tomorrow:
-                discount_code_obj.start_date = tomorrow
-                discount_code_obj.end_date = tomorrow
-                discount_code_obj.used_count = 0
-                discount_code_obj.usage_limit = 1
-                discount_code_obj.is_active = True
-                discount_code_obj.save(update_fields=["start_date", "end_date", "used_count", "usage_limit", "is_active"])
+            discount_code_obj = tmpl.discount_code
+
+        elif env_fb:
+            discount_code_obj = None
+
+        else:
+            email_prefix = to_email.split("@")[0].upper()
+            voucher_code = f"HBD_{email_prefix}"
+            discount_percent = 10
+            discount_code_obj, created = DiscountCode.objects.get_or_create(
+                code=voucher_code,
+                defaults={
+                    "name": f"Sinh nhật {display_name}",
+                    "discount_percent": discount_percent,
+                    "min_order_value": 0,
+                    "start_date": tomorrow,
+                    "end_date": tomorrow,
+                    "usage_limit": 1,
+                    "is_active": True,
+                    "used_count": 0,
+                },
+            )
+            if not created:
+                if (
+                    discount_code_obj.start_date != tomorrow
+                    or discount_code_obj.end_date != tomorrow
+                ):
+                    discount_code_obj.start_date = tomorrow
+                    discount_code_obj.end_date = tomorrow
+                    discount_code_obj.used_count = 0
+                    discount_code_obj.usage_limit = 1
+                    discount_code_obj.is_active = True
+                    discount_code_obj.save(
+                        update_fields=[
+                            "start_date",
+                            "end_date",
+                            "used_count",
+                            "usage_limit",
+                            "is_active",
+                        ]
+                    )
 
         try:
             subject, text_body, html_body = birthday_email_from_template(
@@ -223,6 +246,7 @@ def send_birthday_reminder_emails(explain: list[str] | None = None) -> tuple[int
                 birthday_date=tomorrow,
                 template=tmpl,
                 custom_discount=discount_code_obj,
+                env_voucher_fallback=env_fb,
             )
         except Exception:
             logger.exception("birthday reminder: render template thất bại")
