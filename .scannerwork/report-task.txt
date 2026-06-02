@@ -2,5 +2,5 @@ projectKey=FashionStore
 serverUrl=http://localhost:9000
 serverVersion=26.5.0.122743
 dashboardUrl=http://localhost:9000/dashboard?id=FashionStore
-ceTaskId=53f6f46a-1e41-43d0-9472-59f8a03149b7
-ceTaskUrl=http://localhost:9000/api/ce/task?id=53f6f46a-1e41-43d0-9472-59f8a03149b7
+ceTaskId=3ea7e0ef-2718-42b4-9e4c-fb7b971904ac
+ceTaskUrl=http://localhost:9000/api/ce/task?id=3ea7e0ef-2718-42b4-9e4c-fb7b971904ac
