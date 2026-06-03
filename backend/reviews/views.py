@@ -1,4 +1,5 @@
 from rest_framework import permissions, viewsets, status, serializers
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
@@ -193,6 +194,8 @@ class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     filterset_fields = ["product"]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get_permissions(self):
         if self.action in ("list", "retrieve"):

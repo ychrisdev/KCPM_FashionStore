@@ -4,7 +4,7 @@
     "name": "FashionStore_API",
     "description": "REST API collection cho dự án FashionStore (Django + PostgreSQL). Bao gồm Auth, Products, Cart, Orders, Reviews, Contact, Wishlist, Wallets.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "54894687",
+    "_exporter_id": "54965186",
     "_collection_link": "https://go.postman.co/collection/54894687-049832e6-7357-4f23-94db-3c185651f1cd?source=collection_link"
   },
   "item": [
