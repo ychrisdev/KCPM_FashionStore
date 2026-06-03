@@ -68,7 +68,7 @@ pipeline {
                     withSonarQubeEnv('SonarQube') {
                         sh """
                             ${scannerHome}/bin/sonar-scanner \
-                            -Dsonar.projectKey=FashionStore \
+                            -Dsonar.projectKey=fashionstore \
                             -Dsonar.projectName=FashionStore \
                             -Dsonar.sources=. \
                             -Dsonar.token=${SONAR_TOKEN}
