@@ -1,8 +1,3 @@
-# PostgreSQL cho dev — khớp mặc định trong backend/env.example
-# Chạy: docker compose up -d
-# Sau đó: cd backend && copy env.example .env (chỉnh mật khẩu nếu đổi POSTGRES_PASSWORD)
-#         python manage.py migrate && python manage.py runserver
-
 services:
   db:
     image: postgres:16-alpine
@@ -19,6 +14,36 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - fashionstore_net
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    ports:
+      - "8080:8080"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    networks:
+      - fashionstore_net
+
+  sonarqube:
+    image: sonarqube:community
+    ports:
+      - "9000:9000"
+    environment:
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_logs:/opt/sonarqube/logs
+    networks:
+      - fashionstore_net
+
+networks:
+  fashionstore_net:
+    driver: bridge
 
 volumes:
   fashionstore_pgdata:
+  jenkins_home:
+  sonarqube_data:
+  sonarqube_logs:
