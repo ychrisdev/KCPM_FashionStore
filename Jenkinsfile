@@ -66,13 +66,18 @@ pipeline {
                     def scannerHome = tool 'SonarScanner'
 
                     withSonarQubeEnv('SonarQube') {
-                        sh """
-                            ${scannerHome}/bin/sonar-scanner \
-                            -Dsonar.projectKey=fashionstore \
-                            -Dsonar.projectName=FashionStore \
-                            -Dsonar.sources=. \
-                            -Dsonar.token=${SONAR_TOKEN}
-                        """
+                        sh(
+                            script: """
+                                ${scannerHome}/bin/sonar-scanner \
+                                -Dsonar.projectKey=fashionstore \
+                                -Dsonar.projectName=FashionStore \
+                                -Dsonar.sources=. \
+                                -Dsonar.python.version=3.13 \
+                                -Dsonar.sourceEncoding=UTF-8 \
+                                -Dsonar.token=$SONAR_TOKEN
+                            """,
+                            label: 'Run SonarScanner'
+                        )
                     }
                 }
             }

@@ -13,6 +13,17 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom'],
+        }
+      }
+    },
+    chunkSizeWarningLimit: 600
+  },
   test: {
     globals: false,
     environment: 'jsdom',
