@@ -60,8 +60,7 @@
   line-height: 1.05;
   max-width: 700px;
   color: var(--color-text);
-  margin-bottom: var(--space-lg);
-  margin: 0 auto;
+  margin: 0 auto var(--space-lg);
 }
 
 .heroSubtitle {
