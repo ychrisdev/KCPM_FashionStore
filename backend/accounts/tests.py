@@ -28,21 +28,21 @@ class ProfileRolePermissionTests(TestCase):
         self.customer = User.objects.create_user(
             username="cust",
             email="cust@example.com",
-            password=TEST_PASSWORD,
+            password=TEST_PASSWORD,  # NOSONAR
         )
         self.customer_profile = Profile.objects.get(user=self.customer)
 
         self.other = User.objects.create_user(
             username="other",
             email="other@example.com",
-            password=TEST_PASSWORD,
+            password=TEST_PASSWORD,  # NOSONAR
         )
         self.other_profile = Profile.objects.get(user=self.other)
 
         self.admin_user = User.objects.create_user(
             username="adm",
             email="adm@example.com",
-            password=TEST_PASSWORD,
+            password=TEST_PASSWORD,  # NOSONAR
         )
         p = Profile.objects.get(user=self.admin_user)
         p.role = RoleChoices.ADMIN
@@ -51,7 +51,7 @@ class ProfileRolePermissionTests(TestCase):
         self.staff_user = User.objects.create_user(
             username="staff1",
             email="staff1@example.com",
-            password=TEST_PASSWORD,
+            password=TEST_PASSWORD,  # NOSONAR
         )
         p2 = Profile.objects.get(user=self.staff_user)
         p2.role = RoleChoices.STAFF
@@ -109,7 +109,7 @@ class ProfileRolePermissionTests(TestCase):
         su = User.objects.create_superuser(
             username="su",
             email="su@example.com",
-            password=TEST_PASSWORD,
+            password=TEST_PASSWORD,  # NOSONAR
         )
         Profile.objects.filter(user=su).update(role=RoleChoices.CUSTOMER)
         self.client.force_authenticate(user=su)
@@ -184,7 +184,7 @@ class PasswordResetConfirmTests(TestCase):
         self.user = User.objects.create_user(
             username="reset_u",
             email="reset_u@example.com",
-            password=TEST_OLD_PASSWORD,
+            password=TEST_OLD_PASSWORD,  # NOSONAR
         )
 
     def test_confirm_valid_token_changes_password(self):
@@ -241,7 +241,7 @@ class BirthdayReminderTests(TestCase):
         user = User.objects.create_user(
             username="bday_user",
             email="bday@example.com",
-            password=TEST_PASSWORD,
+            password=TEST_PASSWORD,  # NOSONAR
         )
         p = Profile.objects.get(user=user)
         p.birth_date = date(1995, 6, 1)
@@ -266,7 +266,7 @@ class BirthdayReminderTests(TestCase):
         user = User.objects.create_user(
             username="staff_bday",
             email="st@example.com",
-            password=TEST_PASSWORD,
+            password=TEST_PASSWORD,  # NOSONAR
         )
         p = Profile.objects.get(user=user)
         p.role = RoleChoices.STAFF
