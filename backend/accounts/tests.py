@@ -273,3 +273,77 @@ class BirthdayReminderTests(TestCase):
         p.birth_date = date(1990, 6, 1)
         p.save(update_fields=["role", "birth_date"])
         self.assertEqual(iter_profiles_birthday_tomorrow(), [])
+
+class ChangePasswordViewTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="change_pw_user",
+            email="changepw@example.com",
+            password=TEST_PASSWORD,  # NOSONAR
+        )
+
+    def test_change_password_success(self):
+        self.client.force_authenticate(user=self.user)
+        res = self.client.post(
+            "/api/auth/change-password/",
+            {
+                "old_password": TEST_PASSWORD,  # NOSONAR
+                "new_password": TEST_NEW_PASSWORD,  # NOSONAR
+                "new_password_confirm": TEST_NEW_PASSWORD,  # NOSONAR
+            },
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password(TEST_NEW_PASSWORD))
+
+    def test_change_password_wrong_old_password(self):
+        self.client.force_authenticate(user=self.user)
+        res = self.client.post(
+            "/api/auth/change-password/",
+            {
+                "old_password": "wrongpassword",  # NOSONAR
+                "new_password": TEST_NEW_PASSWORD,  # NOSONAR
+                "new_password_confirm": TEST_NEW_PASSWORD,  # NOSONAR
+            },
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class RegisterViewTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_register_success(self):
+        res = self.client.post(
+            "/api/auth/register/",
+            {
+                "username": "newuser123",
+                "email": "newuser123@example.com",
+                "password": TEST_PASSWORD,  # NOSONAR
+                "password_confirm": TEST_PASSWORD,  # NOSONAR
+            },
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertIn("user", res.data)
+
+    def test_register_duplicate_username(self):
+        User.objects.create_user(
+            username="dupuser",
+            email="dup@example.com",
+            password=TEST_PASSWORD,  # NOSONAR
+        )
+        res = self.client.post(
+            "/api/auth/register/",
+            {
+                "username": "dupuser",
+                "email": "dup2@example.com",
+                "password": TEST_PASSWORD,  # NOSONAR
+                "password_confirm": TEST_PASSWORD,  # NOSONAR
+            },
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
