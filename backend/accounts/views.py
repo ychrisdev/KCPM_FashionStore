@@ -241,7 +241,7 @@ class CurrentUserView(APIView):
             "avatar": avatar_url,
         })
 
-    def _build_login_response(user: User, request) -> dict:
+    def _build_login_response(self, user: User, request) -> dict:
         """Response chuẩn cho mọi luồng đăng nhập — bao gồm avatar."""
         refresh = RefreshToken.for_user(user)
         avatar_url = None
