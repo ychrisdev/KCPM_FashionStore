@@ -38,7 +38,7 @@ pipeline {
                 dir('backend') {
                     sh '''
                         . .venv/bin/activate
-                        python3 manage.py test
+                        python3 -m pytest --cov=. --cov-report=xml:coverage.xml
                     '''
                 }
             }
