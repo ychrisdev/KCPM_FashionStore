@@ -16,9 +16,9 @@ from accounts.birthday_reminder import (
 from accounts.models import Profile
 from core.permissions import RoleChoices
 
-TEST_PASSWORD = "secret12345"  # nosonar
-TEST_OLD_PASSWORD = "OldSecret12345"  # nosonar
-TEST_NEW_PASSWORD = "NewSecret12345"  # nosonar
+TEST_PASSWORD = "secret12345"  # NOSONAR
+TEST_OLD_PASSWORD = "OldSecret12345"  # NOSONAR
+TEST_NEW_PASSWORD = "NewSecret12345"  # NOSONAR
 
 class ProfileRolePermissionTests(TestCase):
     """Đảm bảo chỉ admin/superuser mới PATCH được field role."""

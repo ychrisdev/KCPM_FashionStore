@@ -10,7 +10,7 @@ from orders.models import DiscountCode
 from .models import BirthdayEmailTemplate, Profile
 from core.permissions import RoleChoices, can_manage_profile_roles
 
-PASSWORD_MISMATCH_ERROR = "Mật khẩu xác nhận không khớp"
+PASSWORD_MISMATCH_ERROR = "Mật khẩu xác nhận không khớp" # NOSONAR
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """Cho phép đăng nhập bằng username hoặc email; thông báo lỗi tiếng Việt."""
