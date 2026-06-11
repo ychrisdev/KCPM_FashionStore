@@ -756,7 +756,7 @@ function ProductDetail() {
                   {variantStock === 0
                     ? "Hết hàng"
                     : isAddingToCart
-                      ? "Thêm vào giỏ hàng"
+                      ? "Đang thêm..."
                       : "Thêm vào giỏ hàng"}
                 </button>
                 <button
