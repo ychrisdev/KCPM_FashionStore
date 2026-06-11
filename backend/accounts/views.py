@@ -32,6 +32,8 @@ from .serializers import (
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+_LOCAL_HOST = "//localhost"
+_LOCAL_IP = "//127.0.0.1"
 
 def _password_reset_email_bodies(user: User, reset_url: str) -> tuple[str, str]:
     """Nội dung email dạng text + HTML (template trong templates/emails/)."""
@@ -59,10 +61,10 @@ def _allowed_google_oauth_redirect_uris():
         if not u:
             continue
         expanded.add(u)
-        if "//localhost" in u:
-            expanded.add(u.replace("//localhost", "//127.0.0.1", 1))
-        if "//127.0.0.1" in u:
-            expanded.add(u.replace("//127.0.0.1", "//localhost", 1))
+        if _LOCAL_HOST in u:
+            expanded.add(u.replace(_LOCAL_HOST, _LOCAL_IP, 1))
+        if _LOCAL_IP in u:
+            expanded.add(u.replace(_LOCAL_IP, _LOCAL_HOST, 1))
     return expanded
 
 

@@ -10,6 +10,7 @@ from orders.models import DiscountCode
 from .models import BirthdayEmailTemplate, Profile
 from core.permissions import RoleChoices, can_manage_profile_roles
 
+PASSWORD_MISMATCH_ERROR = "Mật khẩu xác nhận không khớp"
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """Cho phép đăng nhập bằng username hoặc email; thông báo lỗi tiếng Việt."""
@@ -121,7 +122,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if data['password'] != data['password_confirm']:
-            raise serializers.ValidationError({"password_confirm": "Mật khẩu xác nhận không khớp"})
+            raise serializers.ValidationError({"password_confirm": PASSWORD_MISMATCH_ERROR})
         return data
 
     def create(self, validated_data):
@@ -175,7 +176,7 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 
         if data["new_password"] != data["new_password_confirm"]:
             raise serializers.ValidationError(
-                {"new_password_confirm": "Mật khẩu xác nhận không khớp"}
+                {"new_password_confirm": PASSWORD_MISMATCH_ERROR}
             )
         try:
             user = User.objects.get(pk=data["user_id"])
@@ -199,7 +200,7 @@ class ChangePasswordSerializer(serializers.Serializer):
 
     def validate(self, data):
         if data['new_password'] != data['new_password_confirm']:
-            raise serializers.ValidationError({"new_password_confirm": "Mật khẩu xác nhận không khớp"})
+            raise serializers.ValidationError({"new_password_confirm": PASSWORD_MISMATCH_ERROR})
         return data
 
     def validate_old_password(self, value):
