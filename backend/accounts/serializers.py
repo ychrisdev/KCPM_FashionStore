@@ -17,7 +17,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
     def validate(self, attrs):
         username_or_email = (attrs.get("username") or "").strip()
-        password = attrs.get("password")
+        password = attrs.get("password") # nosonar
 
         if not username_or_email or not password:
             raise serializers.ValidationError(
