@@ -105,6 +105,15 @@ class ProfileViewSet(
         if is_admin(user) or getattr(user, "is_superuser", False):
             return Profile.objects.all()
         return Profile.objects.filter(user=user)
+    
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        self.perform_update(serializer)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def perform_update(self, serializer):
         serializer.save()
