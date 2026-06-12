@@ -286,7 +286,7 @@ class ChangePasswordViewTests(TestCase):
     def test_change_password_success(self):
         self.client.force_authenticate(user=self.user)
         res = self.client.post(
-            "/api/auth/change-password/",
+            "/api/auth/password/change/",
             {
                 "old_password": TEST_PASSWORD,  # NOSONAR
                 "new_password": TEST_NEW_PASSWORD,  # NOSONAR
@@ -301,7 +301,7 @@ class ChangePasswordViewTests(TestCase):
     def test_change_password_wrong_old_password(self):
         self.client.force_authenticate(user=self.user)
         res = self.client.post(
-            "/api/auth/change-password/",
+            "/api/auth/password/change/",
             {
                 "old_password": "wrongpassword",  # NOSONAR
                 "new_password": TEST_NEW_PASSWORD,  # NOSONAR
@@ -318,7 +318,7 @@ class RegisterViewTests(TestCase):
 
     def test_register_success(self):
         res = self.client.post(
-            "/api/auth/register/",
+            "/api/auth/registration/",
             {
                 "username": "newuser123",
                 "email": "newuser123@example.com",
@@ -337,7 +337,7 @@ class RegisterViewTests(TestCase):
             password=TEST_PASSWORD,  # NOSONAR
         )
         res = self.client.post(
-            "/api/auth/register/",
+            "/api/auth/registration/",
             {
                 "username": "dupuser",
                 "email": "dup2@example.com",
