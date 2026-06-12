@@ -28,7 +28,7 @@ load_dotenv(BASE_DIR / '.env', override=True)
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-$l_a$sg4yn*5bbk2k2ut!pqjm_pn(e&2f4n$1b&o9!9o-idl18'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -114,7 +114,7 @@ else:
             'ENGINE': _db_engine,
             'NAME': os.getenv('DB_NAME', 'kcpm_fashionstore'),
             'USER': os.getenv('DB_USER', 'postgres'),
-            'PASSWORD': os.getenv('DB_PASSWORD', '123456'),
+            'PASSWORD': os.getenv('DB_PASSWORD'),
             'HOST': os.getenv('DB_HOST', 'localhost'),
             'PORT': os.getenv('DB_PORT', '5432'),
         }
