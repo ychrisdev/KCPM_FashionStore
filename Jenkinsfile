@@ -36,10 +36,12 @@ pipeline {
         stage('Backend - Test') {
             steps {
                 dir('backend') {
-                    sh '''
-                        . .venv/bin/activate
-                        python3 -m pytest --cov=. --cov-report=xml:coverage.xml
-                    '''
+                    withCredentials([string(credentialsId: 'DJANGO_SECRET_KEY', variable: 'DJANGO_SECRET_KEY')]) {
+                        sh '''
+                            . .venv/bin/activate
+                            python3 -m pytest --cov=. --cov-report=xml:coverage.xml
+                        '''
+                    }
                 }
             }
         }
