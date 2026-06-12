@@ -254,14 +254,14 @@ export default function Policy() {
     return Number.isFinite(n) && n > 0 ? n : null;
   }, [policyId]);
 
-  if (policyId != null && policyId !== "" && viewPolicyId == null) {
-    return <Navigate to="/policy" replace />;
-  }
-
   const templateBySlug = useMemo(() => {
     if (!slug) return undefined;
     return POLICY_TEMPLATES.find((t) => t.slug === slug);
   }, [slug]);
+
+  if (policyId != null && policyId !== "" && viewPolicyId == null) {
+    return <Navigate to="/policy" replace />;
+  }
 
   if (viewPolicyId != null) {
     if (loading) {
