@@ -27,18 +27,6 @@ services:
     networks:
       - fashionstore_net
 
-  sonarqube:
-    image: sonarqube:community
-    ports:
-      - "9000:9000"
-    environment:
-      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
-    volumes:
-      - sonarqube_data:/opt/sonarqube/data
-      - sonarqube_logs:/opt/sonarqube/logs
-    networks:
-      - fashionstore_net
-
 networks:
   fashionstore_net:
     driver: bridge
@@ -46,5 +34,3 @@ networks:
 volumes:
   fashionstore_pgdata:
   jenkins_home:
-  sonarqube_data:
-  sonarqube_logs:
