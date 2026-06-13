@@ -47,4 +47,3 @@ htmlcov/
 .DS_Store
 Thumbs.db
 .claude/
-docker-compose.sonar.yml
