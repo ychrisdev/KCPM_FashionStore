@@ -385,3 +385,14 @@ class BirthdayEmailTemplateSerializerTest(TestCase):
         detail = serializer.data["discount_code_detail"]
         self.assertIsNotNone(detail)
         self.assertEqual(detail["code"], "BDAY10")
+
+class ProfileUserSerializerTest(TestCase):
+    def test_validate_email_with_no_instance(self):
+        """Cover nhánh if user is None: return value"""
+        from accounts.serializers import ProfileUserSerializer
+        serializer = ProfileUserSerializer(data={
+            "email": "test@example.com",
+            "first_name": "Test",
+            "last_name": "User",
+        })
+        self.assertTrue(serializer.is_valid())
