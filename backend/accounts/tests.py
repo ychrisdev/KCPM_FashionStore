@@ -388,7 +388,7 @@ class BirthdayEmailTemplateSerializerTest(TestCase):
 
 class ProfileUserSerializerTest(TestCase):
     def test_validate_email_with_no_instance(self):
-        """Cover nhánh if user is None: return value"""
+        """Cover nhánh if user is None: return value trong ProfileUserSerializer"""
         from accounts.serializers import ProfileUserSerializer
         serializer = ProfileUserSerializer(data={
             "email": "test@example.com",
@@ -396,3 +396,48 @@ class ProfileUserSerializerTest(TestCase):
             "last_name": "User",
         })
         self.assertTrue(serializer.is_valid())
+
+    def test_validate_email_duplicate_other_user(self):
+        """Cover nhánh email đã dùng bởi tài khoản khác"""
+        from accounts.serializers import ProfileUserSerializer
+        other = User.objects.create_user(
+            username="other_user",
+            email="taken@example.com",
+            password=TEST_PASSWORD,  # NOSONAR
+        )
+        current = User.objects.create_user(
+            username="current_user",
+            email="current@example.com",
+            password=TEST_PASSWORD,  # NOSONAR
+        )
+        serializer = ProfileUserSerializer(
+            instance=current,
+            data={"email": "taken@example.com"},
+            partial=True,
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("email", serializer.errors)
+
+
+class CurrentUserViewTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="view_user",
+            email="view@example.com",
+            password=TEST_PASSWORD,  # NOSONAR
+        )
+
+    def test_current_user_returns_200(self):
+        """Cover CurrentUserView.get() — nhánh bình thường"""
+        self.client.force_authenticate(user=self.user)
+        res = self.client.get("/api/auth/user/")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data["email"], "view@example.com")
+
+    def test_current_user_avatar_exception_handled(self):
+        """Cover nhánh except Exception: pass trong get_avatar"""
+        self.client.force_authenticate(user=self.user)
+        res = self.client.get("/api/auth/user/")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIsNone(res.data["avatar"])
