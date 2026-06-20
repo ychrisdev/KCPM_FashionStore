@@ -4,6 +4,7 @@ import {
   useState,
   useEffect,
   useCallback,
+  useMemo,
 } from "react";
 import { auth } from "../api/client";
 
@@ -28,17 +29,17 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUserState] = useState<AuthUser | null>(null);
+export function AuthProvider({
+  children,
+}: {
+  readonly children: React.ReactNode;
+}) {
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const setUser = useCallback((u: AuthUser | null) => {
-    setUserState(u);
-  }, []);
-
-  const logout = useCallback(async () => {
+  const logout = useCallback(() => {
     try {
-      await auth.logout();
+      auth.logout();
     } catch (err) {
       console.log(err);
     }
@@ -47,7 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("user_role");
 
-    setUserState(null);
+    setUser(null);
   }, []);
 
   useEffect(() => {
@@ -75,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           } else {
             localStorage.removeItem("user_role");
           }
-          setUserState({
+          setUser({
             username: data.username ?? "User",
             email: data.email,
             first_name: data.first_name,
@@ -90,16 +91,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       )
       .catch(() => {
         auth.logout();
-        setUserState(null);
+        setUser(null);
       })
       .finally(() => setLoading(false));
-  }, [setUserState]);
+  }, []);
 
-  return (
-    <AuthContext.Provider value={{ user, setUser, logout, loading }}>
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo(
+    () => ({ user, setUser, logout, loading }),
+    [user, logout, loading],
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
