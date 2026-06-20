@@ -626,6 +626,20 @@ export default function AdminProducts() {
     setWarehouseDelta("");
   };
 
+  const handleRemoveUploadImage = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      upload_images: (prev.upload_images ?? []).filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleMarkImageDelete = (imgId: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      delete_image_ids: [...(prev.delete_image_ids ?? []), imgId],
+    }));
+  };
+
   const bumpStock = (delta: number) => {
     setVariantForm((f) => ({ ...f, stock: Math.max(0, f.stock + delta) }));
   };
@@ -1011,15 +1025,7 @@ export default function AdminProducts() {
                                   <button
                                     type="button"
                                     className="image-preview-item__del"
-                                    onClick={() =>
-                                      setFormData((prev) => ({
-                                        ...prev,
-                                        delete_image_ids: [
-                                          ...(prev.delete_image_ids ?? []),
-                                          img.id,
-                                        ],
-                                      }))
-                                    }
+                                    onClick={() => handleMarkImageDelete(img.id)}
                                   >
                                     Xóa
                                   </button>
@@ -1049,14 +1055,7 @@ export default function AdminProducts() {
                               <button
                                 type="button"
                                 className="image-preview-item__del"
-                                onClick={() =>
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    upload_images: (
-                                      prev.upload_images ?? []
-                                    ).filter((_, i) => i !== index),
-                                  }))
-                                }
+                                onClick={() => handleRemoveUploadImage(index)}
                               >
                                 Xóa
                               </button>
