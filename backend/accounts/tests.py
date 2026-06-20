@@ -367,7 +367,6 @@ class PasswordResetConfirmSerializerTest(TestCase):
 class BirthdayEmailTemplateSerializerTest(TestCase):
     def test_get_discount_code_detail_returns_data(self):
         """Cover nhánh return {...} trong get_discount_code_detail"""
-        user = User.objects.create_user(username="testadmin", password="pass123")
         dc = DiscountCode.objects.create(
             code="BDAY10",
             name="Birthday Discount",
