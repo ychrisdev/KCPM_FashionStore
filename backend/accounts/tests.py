@@ -372,6 +372,7 @@ class BirthdayEmailTemplateSerializerTest(TestCase):
             code="BDAY10",
             name="Birthday Discount",
             discount_percent=10,
+            start_date=date(2026, 1, 1),
         )
         template = BirthdayEmailTemplate.objects.create(
             email_subject="Happy Birthday",
