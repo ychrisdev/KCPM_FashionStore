@@ -495,9 +495,12 @@ def _get_or_create_google_user(userinfo: dict) -> User:
         first_name=userinfo.get('given_name', ''),
         last_name=userinfo.get('family_name', ''),
     )
-    Profile.objects.create(
-        user=user, google_id=google_id, phone='', address='', role=RoleChoices.CUSTOMER
+    profile, _ = Profile.objects.get_or_create(
+        user=user,
+        defaults={"phone": "", "address": "", "role": RoleChoices.CUSTOMER},
     )
+    profile.google_id = google_id
+    profile.save()
     return user
 
 class GoogleLoginView(APIView):
@@ -731,9 +734,14 @@ def _get_or_create_facebook_user(userinfo: dict) -> User:
         counter += 1
 
     user = User.objects.create_user(username=username, email=email, first_name=first_name, last_name=last_name)
-    Profile.objects.create(
-        user=user, facebook_id=facebook_id, avatar=picture, phone='', address='', role=RoleChoices.CUSTOMER
+    profile, _ = Profile.objects.get_or_create(
+        user=user,
+        defaults={"phone": "", "address": "", "role": RoleChoices.CUSTOMER},
     )
+    profile.facebook_id = facebook_id
+    if picture:
+        profile.avatar = picture
+    profile.save()
     return user
 
 class FacebookLoginView(APIView):
