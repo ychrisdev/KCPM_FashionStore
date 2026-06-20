@@ -400,7 +400,7 @@ class ProfileUserSerializerTest(TestCase):
     def test_validate_email_duplicate_other_user(self):
         """Cover nhánh email đã dùng bởi tài khoản khác"""
         from accounts.serializers import ProfileUserSerializer
-        other = User.objects.create_user(
+        User.objects.create_user(
             username="other_user",
             email="taken@example.com",
             password=TEST_PASSWORD,  # NOSONAR
