@@ -13,8 +13,10 @@ from accounts.birthday_reminder import (
     iter_profiles_birthday_tomorrow,
     send_birthday_reminder_emails,
 )
-from accounts.models import Profile
+from accounts.serializers import PasswordResetConfirmSerializer, BirthdayEmailTemplateSerializer
+from accounts.models import Profile, BirthdayEmailTemplate
 from core.permissions import RoleChoices
+from orders.models import DiscountCode
 
 TEST_PASSWORD = "secret12345"  # NOSONAR
 TEST_OLD_PASSWORD = "OldSecret12345"  # NOSONAR
@@ -347,3 +349,38 @@ class RegisterViewTests(TestCase):
             format="json",
         )
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+class PasswordResetConfirmSerializerTest(TestCase):
+    def test_invalid_user_id_raises_error(self):
+        """Cover nhánh User.DoesNotExist trong PasswordResetConfirmSerializer"""
+        data = {
+            "user_id": 99999,  # ID không tồn tại
+            "token": "some-token",
+            "new_password": "NewPass123!",
+            "new_password_confirm": "NewPass123!",
+        }
+        serializer = PasswordResetConfirmSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("detail", str(serializer.errors))
+
+
+class BirthdayEmailTemplateSerializerTest(TestCase):
+    def test_get_discount_code_detail_returns_data(self):
+        """Cover nhánh return {...} trong get_discount_code_detail"""
+        user = User.objects.create_user(username="testadmin", password="pass123")
+        dc = DiscountCode.objects.create(
+            code="BDAY10",
+            name="Birthday Discount",
+            discount_percent=10,
+        )
+        template = BirthdayEmailTemplate.objects.create(
+            email_subject="Happy Birthday",
+            intro_text="Hello",
+            cta_button_label="Shop Now",
+            footer_text="Footer",
+            discount_code=dc,
+        )
+        serializer = BirthdayEmailTemplateSerializer(template)
+        detail = serializer.data["discount_code_detail"]
+        self.assertIsNotNone(detail)
+        self.assertEqual(detail["code"], "BDAY10")
