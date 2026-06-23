@@ -58,6 +58,18 @@ function formatCurrency(value: number): string {
   return `${value.toLocaleString("vi-VN")}đ`;
 }
 
+function getSubmitButtonLabel(
+  submitting: boolean,
+  paymentMethod: string,
+  total: number,
+): string {
+  if (submitting) return "Đang xử lý...";
+  if (paymentMethod === "cod") return `Đặt hàng — ${formatCurrency(total)}`;
+  if (paymentMethod === "wallet")
+    return `Thanh toán bằng ví — ${formatCurrency(total)}`;
+  return `Thanh toán — ${formatCurrency(total)}`;
+}
+
 function parseMoney(value: string | number | undefined): number {
   if (value == null) return 0;
   const parsed = Number(value);
@@ -1133,13 +1145,11 @@ export default function Checkout() {
                     onClick={handleSubmit}
                     disabled={submitting || walletInsufficient}
                   >
-                    {submitting
-                      ? "Đang xử lý..."
-                      : paymentMethod === "cod"
-                        ? `Đặt hàng — ${formatCurrency(pricing.total)}`
-                        : paymentMethod === "wallet"
-                          ? `Thanh toán bằng ví — ${formatCurrency(pricing.total)}`
-                          : `Thanh toán — ${formatCurrency(pricing.total)}`}
+                    {getSubmitButtonLabel(
+                      submitting,
+                      paymentMethod,
+                      pricing.total,
+                    )}
                   </button>
                 </div>
               </div>
