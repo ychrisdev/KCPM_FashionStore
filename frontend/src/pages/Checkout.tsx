@@ -76,6 +76,14 @@ function parseMoney(value: string | number | undefined): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function getShippingFee(
+  retryOrder: { shipping_fee?: string | number } | null,
+  subtotal: number,
+): number {
+  if (retryOrder) return parseMoney(retryOrder.shipping_fee);
+  return subtotal >= 500000 ? 0 : 30000;
+}
+
 function normalizeDiscountCode(value: string): string {
   return value.trim().toUpperCase();
 }
@@ -449,11 +457,7 @@ export default function Checkout() {
     );
   }
 
-  const shippingFee = retryOrder
-    ? parseMoney(retryOrder.shipping_fee)
-    : subtotal >= 500000
-      ? 0
-      : 30000;
+  const shippingFee = getShippingFee(retryOrder, subtotal);
 
   const pricing = retryOrder
     ? {
