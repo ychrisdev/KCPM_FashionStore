@@ -407,122 +407,101 @@ class GoogleCallbackView(APIView):
         """Exchange authorization code for tokens and authenticate user"""
         code = request.data.get('code')
         if not code:
-            return Response({
-                "error": "Thiếu mã authorization"
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Thiếu mã authorization"}, status=status.HTTP_400_BAD_REQUEST)
 
         raw_redirect = (request.data.get("redirect_uri") or "").strip().rstrip("/")
         allowed = _allowed_google_oauth_redirect_uris()
-        if raw_redirect:
-            if raw_redirect not in allowed:
-                return Response(
-                    {
-                        "error": (
-                            "redirect_uri không khớp cấu hình. Thêm đúng URI vào "
-                            "Google Cloud Console (Authorized redirect URIs), hoặc mở "
-                            "site bằng cùng host với URI đã khai báo (localhost vs 127.0.0.1)."
-                        ),
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            redirect_uri = raw_redirect
-        else:
-            redirect_uri = (settings.GOOGLE_REDIRECT_URI or "").strip().rstrip("/")
+        if raw_redirect and raw_redirect not in allowed:
+            return Response(
+                {"error": ("redirect_uri không khớp cấu hình. ...")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        redirect_uri = raw_redirect or (settings.GOOGLE_REDIRECT_URI or "").strip().rstrip("/")
 
         try:
-            # Exchange code for tokens
-            token_url = "https://oauth2.googleapis.com/token"
-            token_data = {
-                "client_id": settings.GOOGLE_CLIENT_ID,
-                "client_secret": settings.GOOGLE_CLIENT_SECRET,
-                "code": code,
-                "grant_type": "authorization_code",
-                "redirect_uri": redirect_uri,
-            }
+            tokens = _exchange_google_code(code, redirect_uri)
+            userinfo = _fetch_google_userinfo(tokens['access_token'])
 
-            token_response = requests.post(token_url, data=token_data)
-            token_response.raise_for_status()
-            tokens = token_response.json()
-
-            # Get user info from Google
-            userinfo_url = "https://www.googleapis.com/oauth2/v2/userinfo"
-            userinfo_headers = {"Authorization": f"Bearer {tokens['access_token']}"}
-            userinfo_response = requests.get(userinfo_url, headers=userinfo_headers)
-            userinfo_response.raise_for_status()
-            userinfo = userinfo_response.json()
-
-            # Find or create user
-            email = userinfo.get('email')
-            google_id = userinfo.get('id')
-
-            if not email:
-                return Response({
-                    "error": "Không thể lấy thông tin email từ Google"
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-            # Try to find existing user by email
-            user = User.objects.filter(email=email).first()
-
-            if user:
-                profile, _ = Profile.objects.get_or_create(
-                    user=user,
-                    defaults={
-                        "phone": "",
-                        "address": "",
-                        "role": RoleChoices.CUSTOMER,
-                    }
-                )
-                profile.google_id = google_id
-                profile.save()
-            else:
-                # Create new user
-                username = email.split('@')[0]
-                # Ensure username is unique
-                base_username = username
-                counter = 1
-                while User.objects.filter(username=username).exists():
-                    username = f"{base_username}{counter}"
-                    counter += 1
-
-                user = User.objects.create_user(
-                    username=username,
-                    email=email,
-                    first_name=userinfo.get('given_name', ''),
-                    last_name=userinfo.get('family_name', ''),
+            if not userinfo.get('email'):
+                return Response(
+                    {"error": "Không thể lấy thông tin email từ Google"},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
 
-                Profile.objects.create(
-                    user=user,
-                    google_id=google_id,
-                    phone='',
-                    address='',
-                    role=RoleChoices.CUSTOMER
-                )
-
-            # Generate JWT tokens
+            user = _get_or_create_google_user(userinfo)
             refresh = RefreshToken.for_user(user)
 
             return Response({
                 "access": str(refresh.access_token),
                 "refresh": str(refresh),
                 "user": {
-                    "id": user.id,
-                    "username": user.username,
-                    "email": user.email,
-                    "first_name": user.first_name,
-                    "last_name": user.last_name,
-                }
+                    "id": user.id, "username": user.username, "email": user.email,
+                    "first_name": user.first_name, "last_name": user.last_name,
+                },
             })
-
         except requests.exceptions.RequestException as e:
-            return Response({
-                "error": f"Lỗi kết nối với Google: {str(e)}"
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": f"Lỗi kết nối với Google: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({
-                "error": f"Lỗi xác thực Google: {str(e)}"
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": f"Lỗi xác thực Google: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+        
+def _exchange_google_code(code: str, redirect_uri: str) -> dict:
+    """Đổi code lấy access_token, trả raise_for_status nếu lỗi."""
+    token_url = "https://oauth2.googleapis.com/token"
+    token_data = {
+        "client_id": settings.GOOGLE_CLIENT_ID,
+        "client_secret": settings.GOOGLE_CLIENT_SECRET,
+        "code": code,
+        "grant_type": "authorization_code",
+        "redirect_uri": redirect_uri,
+    }
+    token_response = requests.post(token_url, data=token_data)
+    token_response.raise_for_status()
+    return token_response.json()
 
+
+def _fetch_google_userinfo(access_token: str) -> dict:
+    userinfo_url = "https://www.googleapis.com/oauth2/v2/userinfo"
+    headers = {"Authorization": f"Bearer {access_token}"}
+    resp = requests.get(userinfo_url, headers=headers)
+    resp.raise_for_status()
+    return resp.json()
+
+
+def _get_or_create_google_user(userinfo: dict) -> User:
+    """Tìm user theo email, gắn google_id; nếu chưa có thì tạo mới + Profile."""
+    email = userinfo.get('email')
+    google_id = userinfo.get('id')
+
+    user = User.objects.filter(email=email).first()
+    if user:
+        profile, _ = Profile.objects.get_or_create(
+            user=user,
+            defaults={"phone": "", "address": "", "role": RoleChoices.CUSTOMER},
+        )
+        profile.google_id = google_id
+        profile.save()
+        return user
+
+    username = email.split('@')[0]
+    base_username = username
+    counter = 1
+    while User.objects.filter(username=username).exists():
+        username = f"{base_username}{counter}"
+        counter += 1
+
+    user = User.objects.create_user(
+        username=username,
+        email=email,
+        first_name=userinfo.get('given_name', ''),
+        last_name=userinfo.get('family_name', ''),
+    )
+    profile, _ = Profile.objects.get_or_create(
+        user=user,
+        defaults={"phone": "", "address": "", "role": RoleChoices.CUSTOMER},
+    )
+    profile.google_id = google_id
+    profile.save()
+    return user
 
 class GoogleLoginView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -642,135 +621,128 @@ class FacebookCallbackView(APIView):
     def post(self, request):
         """Exchange authorization code for access token and authenticate user"""
         code = request.data.get('code')
-
         if not code:
-            return Response({
-                "error": "Thiếu mã authorization"
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Thiếu mã authorization"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # Exchange code for access token (redirect_uri phải khớp chính xác với Facebook App)
-            token_url = "https://graph.facebook.com/v21.0/oauth/access_token"
-            token_params = {
-                "client_id": settings.FACEBOOK_APP_ID,
-                "client_secret": settings.FACEBOOK_APP_SECRET,
-                "code": code,
-                "redirect_uri": settings.FACEBOOK_REDIRECT_URI,
-            }
+            tokens = _exchange_facebook_code(code)
+            if isinstance(tokens, Response):
+                return tokens
 
-            token_response = requests.get(token_url, params=token_params)
-            tokens = token_response.json()
+            userinfo = _fetch_facebook_userinfo(tokens['access_token'])
+            if isinstance(userinfo, Response):
+                return userinfo
 
-            if 'error' in tokens:
-                err = tokens['error']
-                msg = err.get('message', 'Lỗi xác thực Facebook')
-                return Response({
-                    "error": f"Facebook: {msg}. Kiểm tra Redirect URI trong Facebook App có đúng http://localhost:5173/auth/facebook/callback không."
-                }, status=status.HTTP_400_BAD_REQUEST)
+            if not userinfo.get('id'):
+                return Response({"error": "Facebook không trả id người dùng."}, status=status.HTTP_400_BAD_REQUEST)
 
-            access_token = tokens.get('access_token')
-            if not access_token:
-                return Response({
-                    "error": "Không nhận được access token từ Facebook"
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-            # Get user info from Facebook
-            userinfo_url = "https://graph.facebook.com/v21.0/me"
-            userinfo_params = {
-                "fields": "id,name,email,first_name,last_name,picture",
-                "access_token": access_token,
-            }
-            userinfo_response = requests.get(userinfo_url, params=userinfo_params)
-            userinfo_response.raise_for_status()
-            userinfo = userinfo_response.json()
-
-            if 'error' in userinfo:
-                err = userinfo.get('error')
-                if isinstance(err, dict):
-                    msg = err.get('message', 'Lỗi lấy thông tin Facebook')
-                else:
-                    msg = str(err) if err else 'Lỗi lấy thông tin Facebook'
-                return Response({"error": msg}, status=status.HTTP_400_BAD_REQUEST)
-
-            # Extract user info (email có thể None nếu chỉ request public_profile)
-            facebook_id = userinfo.get('id')
-            if not facebook_id:
-                return Response({
-                    "error": "Facebook không trả id người dùng."
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-            email = userinfo.get('email') or f"fb_{facebook_id}@placeholder.local"
-            first_name = userinfo.get('first_name') or ''
-            last_name = userinfo.get('last_name') or ''
-            picture = _facebook_profile_picture_url(userinfo)
-
-            # Find or create user (ưu tiên tìm theo facebook_id, rồi email)
-            profile_row = Profile.objects.filter(facebook_id=facebook_id).first()
-            user = profile_row.user if profile_row else None
-            if not user and email:
-                user = User.objects.filter(email=email).first()
-
-            if user:
-                profile, _ = Profile.objects.get_or_create(
-                    user=user,
-                    defaults={
-                        "phone": "",
-                        "address": "",
-                        "role": RoleChoices.CUSTOMER,
-                    },
-                )
-                profile.facebook_id = facebook_id
-                if picture:
-                    profile.avatar = picture
-                profile.save()
-            else:
-                base_username = (email.split('@')[0] if '@' in email else f"fb_{facebook_id}").replace('.', '_')[:30]
-                username = base_username
-                counter = 1
-                while User.objects.filter(username=username).exists():
-                    username = f"{base_username}{counter}"[:30]
-                    counter += 1
-
-                user = User.objects.create_user(
-                    username=username,
-                    email=email,
-                    first_name=first_name,
-                    last_name=last_name,
-                )
-
-                Profile.objects.create(
-                    user=user,
-                    facebook_id=facebook_id,
-                    avatar=picture,
-                    phone='',
-                    address='',
-                    role=RoleChoices.CUSTOMER
-                )
-
-            # Generate JWT tokens
+            user = _get_or_create_facebook_user(userinfo)
             refresh = RefreshToken.for_user(user)
 
             return Response({
                 "access": str(refresh.access_token),
                 "refresh": str(refresh),
                 "user": {
-                    "id": user.id,
-                    "username": user.username,
-                    "email": user.email,
-                    "first_name": user.first_name,
-                    "last_name": user.last_name,
-                }
+                    "id": user.id, "username": user.username, "email": user.email,
+                    "first_name": user.first_name, "last_name": user.last_name,
+                },
             })
-
         except requests.exceptions.RequestException as e:
-            return Response({
-                "error": f"Lỗi kết nối với Facebook: {str(e)}"
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": f"Lỗi kết nối với Facebook: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({
-                "error": f"Lỗi xác thực Facebook: {str(e)}"
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": f"Lỗi xác thực Facebook: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
+def _exchange_facebook_code(code: str) -> dict | Response:
+    """Trả dict tokens nếu OK, hoặc Response lỗi để return luôn."""
+    token_url = "https://graph.facebook.com/v21.0/oauth/access_token"
+    token_params = {
+        "client_id": settings.FACEBOOK_APP_ID,
+        "client_secret": settings.FACEBOOK_APP_SECRET,
+        "code": code,
+        "redirect_uri": settings.FACEBOOK_REDIRECT_URI,
+    }
+    token_response = requests.get(token_url, params=token_params)
+    tokens = token_response.json()
+
+    if 'error' in tokens:
+        msg = tokens['error'].get('message', 'Lỗi xác thực Facebook')
+        return Response(
+            {"error": f"Facebook: {msg}. Kiểm tra Redirect URI trong Facebook App có đúng http://localhost:5173/auth/facebook/callback không."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    access_token = tokens.get('access_token')
+    if not access_token:
+        return Response({"error": "Không nhận được access token từ Facebook"}, status=status.HTTP_400_BAD_REQUEST)
+
+    return tokens
+
+
+def _fetch_facebook_userinfo(access_token: str) -> dict | Response:
+    userinfo_url = "https://graph.facebook.com/v21.0/me"
+    userinfo_params = {
+        "fields": "id,name,email,first_name,last_name,picture",
+        "access_token": access_token,
+    }
+    userinfo_response = requests.get(userinfo_url, params=userinfo_params)
+    userinfo_response.raise_for_status()
+    userinfo = userinfo_response.json()
+
+    if 'error' in userinfo:
+        err = userinfo.get('error')
+        msg = err.get('message', 'Lỗi lấy thông tin Facebook') if isinstance(err, dict) else (str(err) or 'Lỗi lấy thông tin Facebook')
+        return Response({"error": msg}, status=status.HTTP_400_BAD_REQUEST)
+
+    return userinfo
+
+
+def _find_user_for_facebook(facebook_id: str, email: str) -> User | None:
+    """Tách nested conditional expression (L827) thành statement độc lập."""
+    profile_row = Profile.objects.filter(facebook_id=facebook_id).first()
+    if profile_row:
+        return profile_row.user
+    if email:
+        return User.objects.filter(email=email).first()
+    return None
+
+
+def _get_or_create_facebook_user(userinfo: dict) -> User:
+    facebook_id = userinfo.get('id')
+    email = userinfo.get('email') or f"fb_{facebook_id}@placeholder.local"
+    first_name = userinfo.get('first_name') or ''
+    last_name = userinfo.get('last_name') or ''
+    picture = _facebook_profile_picture_url(userinfo)
+
+    user = _find_user_for_facebook(facebook_id, email)
+
+    if user:
+        profile, _ = Profile.objects.get_or_create(
+            user=user,
+            defaults={"phone": "", "address": "", "role": RoleChoices.CUSTOMER},
+        )
+        profile.facebook_id = facebook_id
+        if picture:
+            profile.avatar = picture
+        profile.save()
+        return user
+
+    base_username = (email.split('@')[0] if '@' in email else f"fb_{facebook_id}").replace('.', '_')[:30]
+    username = base_username
+    counter = 1
+    while User.objects.filter(username=username).exists():
+        username = f"{base_username}{counter}"[:30]
+        counter += 1
+
+    user = User.objects.create_user(username=username, email=email, first_name=first_name, last_name=last_name)
+    profile, _ = Profile.objects.get_or_create(
+        user=user,
+        defaults={"phone": "", "address": "", "role": RoleChoices.CUSTOMER},
+    )
+    profile.facebook_id = facebook_id
+    if picture:
+        profile.avatar = picture
+    profile.save()
+    return user
 
 class FacebookLoginView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -811,57 +783,17 @@ class FacebookLoginView(APIView):
             userinfo_response.raise_for_status()
             userinfo = userinfo_response.json()
 
-            facebook_id = userinfo.get('id')
-            if not facebook_id:
-                return Response({
-                    "error": "Facebook không trả id người dùng."
-                }, status=status.HTTP_400_BAD_REQUEST)
+            if not userinfo.get('id'):
+                return Response({"error": "no id"}, status=status.HTTP_400_BAD_REQUEST)
 
-            email = userinfo.get('email') or f"fb_{facebook_id}@placeholder.local"
-            first_name = userinfo.get('first_name') or ''
-            last_name = userinfo.get('last_name') or ''
-            picture = _facebook_profile_picture_url(userinfo)
+            userinfo_response = requests.get(userinfo_url, params=userinfo_params)
+            userinfo_response.raise_for_status()
+            userinfo = userinfo_response.json()
 
-            # Find or create user (ưu tiên facebook_id, rồi email)
-            profile_obj = Profile.objects.filter(facebook_id=facebook_id).first()
-            user = profile_obj.user if profile_obj else (User.objects.filter(email=email).first() if email else None)
+            if not userinfo.get('id'):
+                return Response({"error": "no id"}, status=status.HTTP_400_BAD_REQUEST)
 
-            if user:
-                profile, _ = Profile.objects.get_or_create(
-                    user=user,
-                    defaults={
-                        "phone": "",
-                        "address": "",
-                        "role": RoleChoices.CUSTOMER,
-                    },
-                )
-                profile.facebook_id = facebook_id
-                if picture:
-                    profile.avatar = picture
-                profile.save()
-            else:
-                base_username = (email.split('@')[0] if '@' in email else f"fb_{facebook_id}").replace('.', '_')[:30]
-                username = base_username
-                counter = 1
-                while User.objects.filter(username=username).exists():
-                    username = f"{base_username}{counter}"[:30]
-                    counter += 1
-
-                user = User.objects.create_user(
-                    username=username,
-                    email=email,
-                    first_name=first_name,
-                    last_name=last_name,
-                )
-
-                Profile.objects.create(
-                    user=user,
-                    facebook_id=facebook_id,
-                    avatar=picture,
-                    phone='',
-                    address='',
-                    role=RoleChoices.CUSTOMER
-                )
+            user = _get_or_create_facebook_user(userinfo)
 
             # Generate JWT tokens
             refresh = RefreshToken.for_user(user)

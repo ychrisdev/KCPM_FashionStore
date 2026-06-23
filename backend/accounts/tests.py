@@ -13,8 +13,10 @@ from accounts.birthday_reminder import (
     iter_profiles_birthday_tomorrow,
     send_birthday_reminder_emails,
 )
-from accounts.models import Profile
+from accounts.serializers import PasswordResetConfirmSerializer, BirthdayEmailTemplateSerializer
+from accounts.models import Profile, BirthdayEmailTemplate
 from core.permissions import RoleChoices
+from orders.models import DiscountCode
 
 TEST_PASSWORD = "secret12345"  # NOSONAR
 TEST_OLD_PASSWORD = "OldSecret12345"  # NOSONAR
@@ -347,3 +349,373 @@ class RegisterViewTests(TestCase):
             format="json",
         )
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+class PasswordResetConfirmSerializerTest(TestCase):
+    def test_invalid_user_id_raises_error(self):
+        """Cover nhánh User.DoesNotExist trong PasswordResetConfirmSerializer"""
+        data = {
+            "user_id": 99999,  # ID không tồn tại
+            "token": "some-token",
+            "new_password": "NewPass123!",
+            "new_password_confirm": "NewPass123!",
+        }
+        serializer = PasswordResetConfirmSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("detail", str(serializer.errors))
+
+
+class BirthdayEmailTemplateSerializerTest(TestCase):
+    def test_get_discount_code_detail_returns_data(self):
+        """Cover nhánh return {...} trong get_discount_code_detail"""
+        dc = DiscountCode.objects.create(
+            code="BDAY10",
+            name="Birthday Discount",
+            discount_percent=10,
+            start_date=date(2026, 1, 1),
+            end_date=date(2026, 12, 31),
+        )
+        template = BirthdayEmailTemplate.get_solo()
+        template.email_subject = "Happy Birthday"
+        template.intro_text = "Hello"
+        template.cta_button_label = "Shop Now"
+        template.footer_text = "Footer"
+        template.discount_code = dc
+        template.save()
+
+        serializer = BirthdayEmailTemplateSerializer(template)
+        detail = serializer.data["discount_code_detail"]
+        self.assertIsNotNone(detail)
+        self.assertEqual(detail["code"], "BDAY10")
+
+class ProfileUserSerializerTest(TestCase):
+    def test_validate_email_with_no_instance(self):
+        """Cover nhánh if user is None: return value trong ProfileUserSerializer"""
+        from accounts.serializers import ProfileUserSerializer
+        serializer = ProfileUserSerializer(data={
+            "email": "test@example.com",
+            "first_name": "Test",
+            "last_name": "User",
+        })
+        self.assertTrue(serializer.is_valid())
+
+    def test_validate_email_duplicate_other_user(self):
+        """Cover nhánh email đã dùng bởi tài khoản khác"""
+        from accounts.serializers import ProfileUserSerializer
+        User.objects.create_user(
+            username="other_user",
+            email="taken@example.com",
+            password=TEST_PASSWORD,  # NOSONAR
+        )
+        current = User.objects.create_user(
+            username="current_user",
+            email="current@example.com",
+            password=TEST_PASSWORD,  # NOSONAR
+        )
+        serializer = ProfileUserSerializer(
+            instance=current,
+            data={"email": "taken@example.com"},
+            partial=True,
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("email", serializer.errors)
+
+
+class CurrentUserViewTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="view_user",
+            email="view@example.com",
+            password=TEST_PASSWORD,  # NOSONAR
+        )
+
+    def test_current_user_returns_200(self):
+        """Cover CurrentUserView.get() — nhánh bình thường"""
+        self.client.force_authenticate(user=self.user)
+        res = self.client.get("/api/auth/user/")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data["email"], "view@example.com")
+
+    def test_current_user_avatar_exception_handled(self):
+        """Cover nhánh except Exception: pass trong get_avatar"""
+        self.client.force_authenticate(user=self.user)
+        res = self.client.get("/api/auth/user/")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIsNone(res.data["avatar"])
+
+class GoogleCallbackViewTests(TestCase):
+    """Cover GoogleCallbackView.post() và các helper _exchange_google_code,
+    _fetch_google_userinfo, _get_or_create_google_user."""
+
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_missing_code_returns_400(self):
+        res = self.client.post("/api/auth/google/callback/", {}, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_redirect_uri_not_allowed_returns_400(self):
+        res = self.client.post(
+            "/api/auth/google/callback/",
+            {"code": "fake-code", "redirect_uri": "https://evil.example.com/cb"},
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    @patch("accounts.views.requests.get")
+    @patch("accounts.views.requests.post")
+    def test_creates_new_user_when_email_not_found(self, mock_post, mock_get):
+        """Cover nhánh tạo user mới trong _get_or_create_google_user"""
+        mock_post.return_value.json.return_value = {"access_token": "tok123"}
+        mock_post.return_value.raise_for_status.return_value = None
+        mock_get.return_value.json.return_value = {
+            "email": "newgoogle@example.com",
+            "id": "g-id-1",
+            "given_name": "New",
+            "family_name": "Google",
+        }
+        mock_get.return_value.raise_for_status.return_value = None
+
+        res = self.client.post(
+            "/api/auth/google/callback/", {"code": "fake-code"}, format="json"
+        )
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn("access", res.data)
+        user = User.objects.get(email="newgoogle@example.com")
+        self.assertEqual(Profile.objects.get(user=user).google_id, "g-id-1")
+
+    @patch("accounts.views.requests.get")
+    @patch("accounts.views.requests.post")
+    def test_links_existing_user_by_email(self, mock_post, mock_get):
+        """Cover nhánh user đã tồn tại trong _get_or_create_google_user"""
+        existing = User.objects.create_user(
+            username="existing_g",
+            email="existing@example.com",
+            password=TEST_PASSWORD,  # NOSONAR
+        )
+        mock_post.return_value.json.return_value = {"access_token": "tok456"}
+        mock_post.return_value.raise_for_status.return_value = None
+        mock_get.return_value.json.return_value = {
+            "email": "existing@example.com",
+            "id": "g-id-2",
+        }
+        mock_get.return_value.raise_for_status.return_value = None
+
+        res = self.client.post(
+            "/api/auth/google/callback/", {"code": "fake-code"}, format="json"
+        )
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        profile = Profile.objects.get(user=existing)
+        self.assertEqual(profile.google_id, "g-id-2")
+
+    @patch("accounts.views.requests.get")
+    @patch("accounts.views.requests.post")
+    def test_no_email_from_google_returns_400(self, mock_post, mock_get):
+        """Cover nhánh if not userinfo.get('email') trong GoogleCallbackView.post"""
+        mock_post.return_value.json.return_value = {"access_token": "tok789"}
+        mock_post.return_value.raise_for_status.return_value = None
+        mock_get.return_value.json.return_value = {"id": "g-id-3"}
+        mock_get.return_value.raise_for_status.return_value = None
+
+        res = self.client.post(
+            "/api/auth/google/callback/", {"code": "fake-code"}, format="json"
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    @patch("accounts.views.requests.post")
+    def test_google_request_exception_returns_400(self, mock_post):
+        """Cover except requests.exceptions.RequestException trong post()"""
+        import requests
+        mock_post.side_effect = requests.exceptions.RequestException("network down")
+
+        res = self.client.post(
+            "/api/auth/google/callback/", {"code": "fake-code"}, format="json"
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class FacebookCallbackViewTests(TestCase):
+    """Cover FacebookCallbackView.post() và các helper _exchange_facebook_code,
+    _fetch_facebook_userinfo, _find_user_for_facebook, _get_or_create_facebook_user."""
+
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_missing_code_returns_400(self):
+        res = self.client.post("/api/auth/facebook/callback/", {}, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    @patch("accounts.views.requests.get")
+    def test_token_exchange_error_returns_400(self, mock_get):
+        """Cover nhánh 'error' in tokens trong _exchange_facebook_code"""
+        mock_get.return_value.json.return_value = {
+            "error": {"message": "Invalid verification code"}
+        }
+        res = self.client.post(
+            "/api/auth/facebook/callback/", {"code": "bad-code"}, format="json"
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    @patch("accounts.views.requests.get")
+    def test_creates_new_user_with_placeholder_email(self, mock_get):
+        """Cover nhánh tạo user mới khi Facebook không trả email (_get_or_create_facebook_user)"""
+        def fake_get(url, params=None, **kwargs):
+            mock_resp = mock_get.return_value.__class__()
+            if "oauth/access_token" in url:
+                mock_resp.json.return_value = {"access_token": "fb-tok-1"}
+            else:
+                mock_resp.json.return_value = {
+                    "id": "fb-id-1",
+                    "first_name": "Face",
+                    "last_name": "Book",
+                }
+            mock_resp.raise_for_status.return_value = None
+            return mock_resp
+
+        mock_get.side_effect = fake_get
+        res = self.client.post(
+            "/api/auth/facebook/callback/", {"code": "fake-code"}, format="json"
+        )
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        user = User.objects.get(email="fb_fb-id-1@placeholder.local")
+        self.assertEqual(Profile.objects.get(user=user).facebook_id, "fb-id-1")
+
+    @patch("accounts.views.requests.get")
+    def test_links_existing_user_by_facebook_id(self, mock_get):
+        """Cover nhánh _find_user_for_facebook tìm theo facebook_id có sẵn"""
+        existing = User.objects.create_user(
+            username="existing_fb",
+            email="existingfb@example.com",
+            password=TEST_PASSWORD,  # NOSONAR
+        )
+        profile = Profile.objects.get(user=existing)
+        profile.facebook_id = "fb-id-2"
+        profile.save(update_fields=["facebook_id"])
+
+        def fake_get(url, params=None, **kwargs):
+            mock_resp = mock_get.return_value.__class__()
+            if "oauth/access_token" in url:
+                mock_resp.json.return_value = {"access_token": "fb-tok-2"}
+            else:
+                mock_resp.json.return_value = {
+                    "id": "fb-id-2",
+                    "email": "existingfb@example.com",
+                }
+            mock_resp.raise_for_status.return_value = None
+            return mock_resp
+
+        mock_get.side_effect = fake_get
+
+        res = self.client.post(
+            "/api/auth/facebook/callback/", {"code": "fake-code"}, format="json"
+        )
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data["user"]["id"], existing.id)
+
+    @patch("accounts.views.requests.get")
+    def test_userinfo_error_returns_400(self, mock_get):
+        """Cover nhánh 'error' in userinfo trong _fetch_facebook_userinfo"""
+        def fake_get(url, params=None, **kwargs):
+            mock_resp = mock_get.return_value.__class__()
+            if "oauth/access_token" in url:
+                mock_resp.json.return_value = {"access_token": "fb-tok-3"}
+            else:
+                mock_resp.json.return_value = {"error": {"message": "Bad token"}}
+            mock_resp.raise_for_status.return_value = None
+            return mock_resp
+
+        mock_get.side_effect = fake_get
+
+        res = self.client.post(
+            "/api/auth/facebook/callback/", {"code": "fake-code"}, format="json"
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    @patch("accounts.views.requests.get")
+    def test_facebook_request_exception_returns_400(self, mock_get):
+        """Cover except requests.exceptions.RequestException trong post()"""
+        import requests
+        mock_get.side_effect = requests.exceptions.RequestException("network down")
+
+        res = self.client.post(
+            "/api/auth/facebook/callback/", {"code": "fake-code"}, format="json"
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class PasswordResetRequestViewTests(TestCase):
+    """Cover PasswordResetRequestView.post() và _send_password_reset_email."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="reset_req_user",
+            email="resetreq@example.com",
+            password=TEST_PASSWORD,  # NOSONAR
+        )
+
+    @override_settings(
+        EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+        EMAIL_HOST_USER="sender@example.com",
+        EMAIL_HOST_PASSWORD="app-password-16-chars",  # NOSONAR
+        DEFAULT_FROM_EMAIL="FashionStore <sender@example.com>",
+    )
+    def test_request_sends_email_successfully(self):
+        mail.outbox.clear()
+        res = self.client.post(
+            "/api/auth/password/reset/",
+            {"email": "resetreq@example.com"},
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(mail.outbox), 1)
+
+    @override_settings(
+        EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend",
+        EMAIL_HOST_USER="",
+        EMAIL_HOST_PASSWORD="",  # NOSONAR
+    )
+    def test_smtp_misconfigured_returns_503(self):
+        """Cover nhánh merge-if: smtp backend nhưng thiếu EMAIL_HOST_USER/PASSWORD"""
+        res = self.client.post(
+            "/api/auth/password/reset/",
+            {"email": "resetreq@example.com"},
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_503_SERVICE_UNAVAILABLE)
+
+    @override_settings(
+        EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend",
+        EMAIL_HOST_USER="sender@example.com",
+        EMAIL_HOST_PASSWORD="app-password-16-chars",  # NOSONAR
+    )
+    @patch("accounts.views.send_mail")
+    def test_gmail_535_error_returns_500_with_guidance(self, mock_send_mail):
+        """Cover nhánh lỗi 535 trong _send_password_reset_email"""
+        mock_send_mail.side_effect = Exception(
+            "(535, b'5.7.8 Username and Password not accepted')"
+        )
+        res = self.client.post(
+            "/api/auth/password/reset/",
+            {"email": "resetreq@example.com"},
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.assertIn("Gmail", res.data["message"])
+
+    @override_settings(
+        EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend",
+        EMAIL_HOST_USER="sender@example.com",
+        EMAIL_HOST_PASSWORD="app-password-16-chars",  # NOSONAR
+    )
+    @patch("accounts.views.send_mail")
+    def test_generic_send_error_returns_500(self, mock_send_mail):
+        """Cover nhánh else (lỗi gửi mail khác 535) trong _send_password_reset_email"""
+        mock_send_mail.side_effect = Exception("Connection timed out")
+        res = self.client.post(
+            "/api/auth/password/reset/",
+            {"email": "resetreq@example.com"},
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.assertIn("Lỗi gửi email", res.data["message"])
