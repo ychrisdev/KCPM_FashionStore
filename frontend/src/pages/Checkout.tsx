@@ -47,7 +47,7 @@ interface PricingPreview {
 function getUnitPrice(item: CartItemType): number {
   const product = item.product;
   if (!product) return 0;
-  let price = parseFloat(String(product.price ?? 0));
+  let price = Number.parseFloat(String(product.price ?? 0));
   if (product.promotion?.discount_percent) {
     price = price * (1 - product.promotion.discount_percent / 100);
   }
@@ -87,7 +87,9 @@ function getStoredCartItems(): { items: CartItemType[]; ids: number[] } | null {
     if (items && ids) {
       return { items: JSON.parse(items), ids: JSON.parse(ids) };
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   return null;
 }
 
@@ -95,14 +97,18 @@ function storeCartItems(items: CartItemType[], ids: number[]): void {
   try {
     sessionStorage.setItem(SESSION_CART_KEY, JSON.stringify(items));
     sessionStorage.setItem(SESSION_CART_IDS_KEY, JSON.stringify(ids));
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 }
 
 function clearStoredCart(): void {
   try {
     sessionStorage.removeItem(SESSION_CART_KEY);
     sessionStorage.removeItem(SESSION_CART_IDS_KEY);
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 }
 
 function getApiErrorMessage(data: unknown, fallback: string): string {
@@ -223,8 +229,12 @@ export default function Checkout() {
   const [districts, setDistricts] = useState<any[]>([]);
   const [wards, setWards] = useState<any[]>([]);
 
-  const [selectedProvinceCode, setSelectedProvinceCode] = useState<number | "">("");
-  const [selectedDistrictCode, setSelectedDistrictCode] = useState<number | "">("");
+  const [selectedProvinceCode, setSelectedProvinceCode] = useState<number | "">(
+    "",
+  );
+  const [selectedDistrictCode, setSelectedDistrictCode] = useState<number | "">(
+    "",
+  );
   const [selectedWardCode, setSelectedWardCode] = useState<number | "">("");
 
   const [selectedProvinceName, setSelectedProvinceName] = useState("");
@@ -283,7 +293,9 @@ export default function Checkout() {
       .then((r) => {
         if (cancelled) return;
         const b = r.data.balance;
-        setWalletBalance(typeof b === "string" ? parseFloat(b) : Number(b));
+        setWalletBalance(
+          typeof b === "string" ? Number.parseFloat(b) : Number(b),
+        );
       })
       .catch(() => {
         if (!cancelled) setWalletBalance(null);
@@ -311,27 +323,27 @@ export default function Checkout() {
           const data = res.data;
           setRetryOrder(data);
           const mappedItems = (data.items || []).map((it: any) => ({
-             id: it.id,
-             product: {
-               id: it.product?.id,
-               name: it.product?.name,
-               price: it.price,
-               image: it.product?.image,
-               promotion: null,
-             },
-             variant_info: it.variant_info,
-             quantity: it.quantity,
+            id: it.id,
+            product: {
+              id: it.product?.id,
+              name: it.product?.name,
+              price: it.price,
+              image: it.product?.image,
+              promotion: null,
+            },
+            variant_info: it.variant_info,
+            quantity: it.quantity,
           }));
           setItems(mappedItems);
-          
+
           if (data.shipping) {
-             setForm({
-               name: data.shipping.name || "",
-               phone: data.shipping.phone || "",
-               address: data.shipping.address || "",
-               note: data.shipping.note || "",
-             });
-             setStep("confirm");
+            setForm({
+              name: data.shipping.name || "",
+              phone: data.shipping.phone || "",
+              address: data.shipping.address || "",
+              note: data.shipping.note || "",
+            });
+            setStep("confirm");
           }
         })
         .catch(() => {
@@ -376,7 +388,10 @@ export default function Checkout() {
         const safeList = Array.isArray(list) ? list : [];
 
         // Store in sessionStorage
-        storeCartItems(safeList, safeList.map((item) => item.id));
+        storeCartItems(
+          safeList,
+          safeList.map((item) => item.id),
+        );
 
         if (!hasSpecificSelection) {
           setItems(safeList);
@@ -388,7 +403,9 @@ export default function Checkout() {
           setItems(filtered);
 
           if (filtered.length === 0) {
-            setSelectionNotice("Các sản phẩm bạn chọn không còn trong giỏ hàng.");
+            setSelectionNotice(
+              "Các sản phẩm bạn chọn không còn trong giỏ hàng.",
+            );
           } else if (filtered.length !== selectedIdsFromQuery.length) {
             setSelectionNotice(
               "Một số sản phẩm đã không còn trong giỏ. Hệ thống chỉ giữ lại các sản phẩm còn hợp lệ.",
@@ -409,7 +426,7 @@ export default function Checkout() {
   }, [user]); // Only depend on user, not on selection params
 
   const selectedCartItemIds = items.map((item) => item.id);
-  
+
   let subtotal = 0;
   if (retryOrder) {
     subtotal = parseMoney(retryOrder.subtotal);
@@ -419,9 +436,13 @@ export default function Checkout() {
       0,
     );
   }
-  
-  const shippingFee = retryOrder ? parseMoney(retryOrder.shipping_fee) : (subtotal >= 500000 ? 0 : 30000);
-  
+
+  const shippingFee = retryOrder
+    ? parseMoney(retryOrder.shipping_fee)
+    : subtotal >= 500000
+      ? 0
+      : 30000;
+
   const pricing = retryOrder
     ? {
         subtotal,
@@ -430,18 +451,18 @@ export default function Checkout() {
         total: parseMoney(retryOrder.total_price),
       }
     : pricingPreview
-    ? {
-        subtotal: parseMoney(pricingPreview.subtotal),
-        shippingFee: parseMoney(pricingPreview.shipping_fee),
-        discountAmount: parseMoney(pricingPreview.discount_amount),
-        total: parseMoney(pricingPreview.total_price),
-      }
-    : {
-        subtotal,
-        shippingFee,
-        discountAmount: 0,
-        total: subtotal + shippingFee,
-      };
+      ? {
+          subtotal: parseMoney(pricingPreview.subtotal),
+          shippingFee: parseMoney(pricingPreview.shipping_fee),
+          discountAmount: parseMoney(pricingPreview.discount_amount),
+          total: parseMoney(pricingPreview.total_price),
+        }
+      : {
+          subtotal,
+          shippingFee,
+          discountAmount: 0,
+          total: subtotal + shippingFee,
+        };
 
   const walletInsufficient =
     paymentMethod === "wallet" &&
@@ -450,11 +471,18 @@ export default function Checkout() {
 
   const appliedDiscountCode = retryOrder
     ? retryOrder.discount_code || retryOrder.discount_code_snapshot || ""
-    : pricingPreview?.discount_code ?? "";
+    : (pricingPreview?.discount_code ?? "");
   const hasAppliedDiscount = !!appliedDiscountCode;
 
   const handleContinueToConfirm = () => {
-    if (!form.name.trim() || !form.phone.trim() || !addressLine.trim() || !selectedProvinceName || !selectedDistrictName || !selectedWardName) {
+    if (
+      !form.name.trim() ||
+      !form.phone.trim() ||
+      !addressLine.trim() ||
+      !selectedProvinceName ||
+      !selectedDistrictName ||
+      !selectedWardName
+    ) {
       alert("Vui lòng điền đầy đủ họ tên, số điện thoại và địa chỉ.");
       return;
     }
@@ -520,7 +548,11 @@ export default function Checkout() {
     }
 
     const normalizedCode = normalizeDiscountCode(discountCode);
-    if (!retryOrder && normalizedCode && appliedDiscountCode !== normalizedCode) {
+    if (
+      !retryOrder &&
+      normalizedCode &&
+      appliedDiscountCode !== normalizedCode
+    ) {
       setDiscountCode("");
       setPricingPreview(null);
       setDiscountMessage(
@@ -536,12 +568,15 @@ export default function Checkout() {
         : null;
 
     setSubmitting(true);
-    
+
     if (retryOrder) {
       try {
-        const res = await orders.retryPayment(retryOrder.id, { payment_method: paymentMethod });
+        const res = await orders.retryPayment(retryOrder.id, {
+          payment_method: paymentMethod,
+        });
         const data = res.data as { payment_url?: string };
-        const payUrl = typeof data.payment_url === "string" ? data.payment_url : "";
+        const payUrl =
+          typeof data.payment_url === "string" ? data.payment_url : "";
         if (payUrl) {
           if (assignGatewayUrl(gatewayTab, payUrl)) {
             navigate("/orders", {
@@ -561,8 +596,14 @@ export default function Checkout() {
         navigate("/orders", { state: { orderPlaced: true } });
       } catch (err) {
         closeGatewayTab(gatewayTab);
-        const resData = (err as { response?: { data?: unknown } })?.response?.data;
-        alert(getApiErrorMessage(resData, "Thanh toán lại thất bại. Vui lòng thử lại."));
+        const resData = (err as { response?: { data?: unknown } })?.response
+          ?.data;
+        alert(
+          getApiErrorMessage(
+            resData,
+            "Thanh toán lại thất bại. Vui lòng thử lại.",
+          ),
+        );
       } finally {
         setSubmitting(false);
       }
@@ -709,24 +750,28 @@ export default function Checkout() {
 
   return (
     <section className="pageSection checkout-page">
-                    {submitting &&
-                      (paymentMethod === "zalopay" ||
-                        paymentMethod === "momo") && (
-        <div className="checkout-gatewayOverlay" role="status" aria-live="polite">
-          <div className="checkout-gatewayOverlayCard">
-            <span className="checkout-gatewaySpinner" aria-hidden />
-            <p className="checkout-gatewayOverlayTitle">
-              {paymentMethod === "zalopay"
-                ? "Đang tạo phiên thanh toán ZaloPay…"
-                : "Đang tạo phiên thanh toán MoMo…"}
-            </p>
-            <p className="checkout-gatewayOverlayHint">
-              Đang liên hệ máy chủ cổng thanh toán. Nếu đã mở tab mới, vui lòng thanh toán ở đó;
-              trang này sẽ chuyển tới đơn hàng sau khi sẵn sàng.
-            </p>
+      {submitting &&
+        (paymentMethod === "zalopay" || paymentMethod === "momo") && (
+          <div
+            className="checkout-gatewayOverlay"
+            role="status"
+            aria-live="polite"
+          >
+            <div className="checkout-gatewayOverlayCard">
+              <span className="checkout-gatewaySpinner" aria-hidden />
+              <p className="checkout-gatewayOverlayTitle">
+                {paymentMethod === "zalopay"
+                  ? "Đang tạo phiên thanh toán ZaloPay…"
+                  : "Đang tạo phiên thanh toán MoMo…"}
+              </p>
+              <p className="checkout-gatewayOverlayHint">
+                Đang liên hệ máy chủ cổng thanh toán. Nếu đã mở tab mới, vui
+                lòng thanh toán ở đó; trang này sẽ chuyển tới đơn hàng sau khi
+                sẵn sàng.
+              </p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
       <div className="sectionContainer checkout-container">
         <div className="checkout-steps">
           <div
@@ -798,8 +843,17 @@ export default function Checkout() {
                       required
                     />
                   </div>
-                  <div className="checkout-field" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)', gap: '16px', alignItems: 'start' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <div
+                    className="checkout-field"
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)",
+                      gap: "16px",
+                      alignItems: "start",
+                    }}
+                  >
+                    <div style={{ display: "flex", flexDirection: "column" }}>
                       <label htmlFor="province">Tỉnh/Thành phố *</label>
                       <select
                         id="province"
@@ -808,17 +862,23 @@ export default function Checkout() {
                         onChange={(e) => {
                           const code = Number(e.target.value) || "";
                           setSelectedProvinceCode(code);
-                          setSelectedProvinceName(e.target.options[e.target.selectedIndex].text);
+                          setSelectedProvinceName(
+                            e.target.options[e.target.selectedIndex].text,
+                          );
                         }}
                         required
                       >
-                        <option value="" disabled>-- Chọn Tỉnh --</option>
+                        <option value="" disabled>
+                          -- Chọn Tỉnh --
+                        </option>
                         {provinces.map((p) => (
-                          <option key={p.code} value={p.code}>{p.name}</option>
+                          <option key={p.code} value={p.code}>
+                            {p.name}
+                          </option>
                         ))}
                       </select>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ display: "flex", flexDirection: "column" }}>
                       <label htmlFor="district">Quận/Huyện *</label>
                       <select
                         id="district"
@@ -827,18 +887,24 @@ export default function Checkout() {
                         onChange={(e) => {
                           const code = Number(e.target.value) || "";
                           setSelectedDistrictCode(code);
-                          setSelectedDistrictName(e.target.options[e.target.selectedIndex].text);
+                          setSelectedDistrictName(
+                            e.target.options[e.target.selectedIndex].text,
+                          );
                         }}
                         disabled={!selectedProvinceCode}
                         required
                       >
-                        <option value="" disabled>-- Chọn Huyện --</option>
+                        <option value="" disabled>
+                          -- Chọn Huyện --
+                        </option>
                         {districts.map((d) => (
-                          <option key={d.code} value={d.code}>{d.name}</option>
+                          <option key={d.code} value={d.code}>
+                            {d.name}
+                          </option>
                         ))}
                       </select>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ display: "flex", flexDirection: "column" }}>
                       <label htmlFor="ward">Phường/Xã *</label>
                       <select
                         id="ward"
@@ -847,20 +913,28 @@ export default function Checkout() {
                         onChange={(e) => {
                           const code = Number(e.target.value) || "";
                           setSelectedWardCode(code);
-                          setSelectedWardName(e.target.options[e.target.selectedIndex].text);
+                          setSelectedWardName(
+                            e.target.options[e.target.selectedIndex].text,
+                          );
                         }}
                         disabled={!selectedDistrictCode}
                         required
                       >
-                        <option value="" disabled>-- Chọn Xã --</option>
+                        <option value="" disabled>
+                          -- Chọn Xã --
+                        </option>
                         {wards.map((w) => (
-                          <option key={w.code} value={w.code}>{w.name}</option>
+                          <option key={w.code} value={w.code}>
+                            {w.name}
+                          </option>
                         ))}
                       </select>
                     </div>
                   </div>
                   <div className="checkout-field">
-                    <label htmlFor="addressLine">Địa chỉ cụ thể (số nhà, ngõ, đường) *</label>
+                    <label htmlFor="addressLine">
+                      Địa chỉ cụ thể (số nhà, ngõ, đường) *
+                    </label>
                     <textarea
                       id="addressLine"
                       className="checkout-input checkout-textarea"
@@ -951,7 +1025,8 @@ export default function Checkout() {
                         name="payment"
                         checked={paymentMethod === "wallet"}
                         disabled={
-                          walletBalance !== null && walletBalance < pricing.total
+                          walletBalance !== null &&
+                          walletBalance < pricing.total
                         }
                         onChange={() => setPaymentMethod("wallet")}
                       />
@@ -990,8 +1065,8 @@ export default function Checkout() {
                       <span>
                         <strong>ZaloPay</strong>
                         <small>
-                          Sau khi đặt hàng bạn được chuyển sang trang cổng ZaloPay (QR trên đó); quét
-                          bằng app ZaloPay sandbox
+                          Sau khi đặt hàng bạn được chuyển sang trang cổng
+                          ZaloPay (QR trên đó); quét bằng app ZaloPay sandbox
                         </small>
                       </span>
                     </label>
@@ -1045,7 +1120,9 @@ export default function Checkout() {
                   <button
                     type="button"
                     className="checkout-btn back-btn"
-                    onClick={() => retryOrder ? navigate("/orders") : setStep("shipping")}
+                    onClick={() =>
+                      retryOrder ? navigate("/orders") : setStep("shipping")
+                    }
                     disabled={submitting}
                   >
                     ← Quay lại
@@ -1079,68 +1156,69 @@ export default function Checkout() {
               </div>
 
               {!retryOrder && (
-              <div className="checkout-discount-box">
-                <label
-                  htmlFor="discount-code"
-                  className="checkout-discount-label"
-                >
-                  Mã giảm giá
-                </label>
-                <div className="checkout-discount-row">
-                  <input
-                    id="discount-code"
-                    type="text"
-                    className="checkout-input checkout-discount-input"
-                    placeholder="Nhập mã giảm giá..."
-                    value={discountCode}
-                    onChange={(event) => {
-                      const nextValue = event.target.value.toUpperCase();
-                      setDiscountCode(nextValue);
-                      if (
-                        pricingPreview &&
-                        normalizeDiscountCode(nextValue) !== appliedDiscountCode
-                      ) {
-                        setPricingPreview(null);
-                      }
-                      setDiscountMessage("");
-                    }}
-                  />
-                  <button
-                    type="button"
-                    className="checkout-btn checkout-btn-secondary checkout-discount-apply"
-                    onClick={handleApplyDiscount}
-                    disabled={discountLoading}
+                <div className="checkout-discount-box">
+                  <label
+                    htmlFor="discount-code"
+                    className="checkout-discount-label"
                   >
-                    {discountLoading ? "Đang áp dụng..." : "Áp dụng"}
-                  </button>
-                </div>
-
-                {hasAppliedDiscount && (
-                  <div className="checkout-discount-meta">
-                    <span className="checkout-discount-badge">
-                      {appliedDiscountCode}
-                      {pricingPreview?.discount_percent
-                        ? ` - ${pricingPreview.discount_percent}%`
-                        : ""}
-                    </span>
+                    Mã giảm giá
+                  </label>
+                  <div className="checkout-discount-row">
+                    <input
+                      id="discount-code"
+                      type="text"
+                      className="checkout-input checkout-discount-input"
+                      placeholder="Nhập mã giảm giá..."
+                      value={discountCode}
+                      onChange={(event) => {
+                        const nextValue = event.target.value.toUpperCase();
+                        setDiscountCode(nextValue);
+                        if (
+                          pricingPreview &&
+                          normalizeDiscountCode(nextValue) !==
+                            appliedDiscountCode
+                        ) {
+                          setPricingPreview(null);
+                        }
+                        setDiscountMessage("");
+                      }}
+                    />
                     <button
                       type="button"
-                      className="checkout-discount-clear"
-                      onClick={handleClearDiscount}
+                      className="checkout-btn checkout-btn-secondary checkout-discount-apply"
+                      onClick={handleApplyDiscount}
+                      disabled={discountLoading}
                     >
-                      Bỏ mã
+                      {discountLoading ? "Đang áp dụng..." : "Áp dụng"}
                     </button>
                   </div>
-                )}
 
-                {discountMessage && (
-                  <p
-                    className={`checkout-discount-message ${hasAppliedDiscount ? "is-success" : "is-error"}`}
-                  >
-                    {discountMessage}
-                  </p>
-                )}
-              </div>
+                  {hasAppliedDiscount && (
+                    <div className="checkout-discount-meta">
+                      <span className="checkout-discount-badge">
+                        {appliedDiscountCode}
+                        {pricingPreview?.discount_percent
+                          ? ` - ${pricingPreview.discount_percent}%`
+                          : ""}
+                      </span>
+                      <button
+                        type="button"
+                        className="checkout-discount-clear"
+                        onClick={handleClearDiscount}
+                      >
+                        Bỏ mã
+                      </button>
+                    </div>
+                  )}
+
+                  {discountMessage && (
+                    <p
+                      className={`checkout-discount-message ${hasAppliedDiscount ? "is-success" : "is-error"}`}
+                    >
+                      {discountMessage}
+                    </p>
+                  )}
+                </div>
               )}
 
               <div className="checkout-summary-rows">
@@ -1181,9 +1259,17 @@ export default function Checkout() {
                   </div>
                 )}
                 {selectedProvinceName && (
-                  <div className="checkout-summary-row checkout-summary-row--delivery" style={{ marginTop: '12px', fontSize: '0.9rem' }}>
+                  <div
+                    className="checkout-summary-row checkout-summary-row--delivery"
+                    style={{ marginTop: "12px", fontSize: "0.9rem" }}
+                  >
                     <span>Dự kiến nhận hàng</span>
-                    <span style={{ fontWeight: 500, color: 'var(--success-color, #22c55e)' }}>
+                    <span
+                      style={{
+                        fontWeight: 500,
+                        color: "var(--success-color, #22c55e)",
+                      }}
+                    >
                       {getEstimatedDeliveryTime(selectedProvinceName)}
                     </span>
                   </div>
