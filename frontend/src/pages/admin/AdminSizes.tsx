@@ -225,8 +225,8 @@ export default function AdminSizes() {
               <h3>{editingSize ? "Sửa kích thước" : "Thêm kích thước mới"}</h3>
               <form onSubmit={handleSubmit}>
                 <div className="form-group">
-                  <label>Tên kích thước</label>
-                  <input
+                  <label htmlFor="size-name">Tên kích thước</label>
+                  <input id="size-name"
                     type="text"
                     placeholder="Vd: S, M, L, XL, 38, 40…"
                     value={formName}
@@ -236,8 +236,8 @@ export default function AdminSizes() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Thứ tự hiển thị</label>
-                  <input
+                  <label htmlFor="size-order">Thứ tự hiển thị</label>
+                  <input id="size-order"
                     type="number"
                     min={0}
                     value={formOrder}

@@ -284,7 +284,7 @@ export default function AdminReturns() {
 
               {detail.status === "pending" && (
                 <div style={{ marginTop: "16px" }}>
-                  <label
+                  <label htmlFor="return-response-note"
                     style={{
                       display: "block",
                       fontWeight: 600,
@@ -293,7 +293,7 @@ export default function AdminReturns() {
                   >
                     Ghi chú phản hồi (tuỳ chọn)
                   </label>
-                  <textarea
+                  <textarea id="return-response-note"
                     className="admin-textarea"
                     rows={3}
                     value={adminNote}
@@ -337,7 +337,7 @@ export default function AdminReturns() {
 
               {detail.status === "approved" && (
                 <div style={{ marginTop: "16px" }}>
-                  <label
+                  <label htmlFor="return-refund-note"
                     style={{
                       display: "block",
                       fontWeight: 600,
@@ -346,7 +346,7 @@ export default function AdminReturns() {
                   >
                     Ghi chú hoàn tiền (tuỳ chọn)
                   </label>
-                  <textarea
+                  <textarea id="return-refund-note"
                     className="admin-textarea"
                     rows={2}
                     value={adminNote}
