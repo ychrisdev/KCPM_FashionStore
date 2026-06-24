@@ -399,9 +399,8 @@ export default function AdminPromotions() {
               <h3>{editingPromotion ? "Sửa khuyến mãi" : "Thêm khuyến mãi"}</h3>
               <form onSubmit={handlePromotionSubmit}>
                 <div className="form-group">
-                  <label>Tên khuyến mãi</label>
-                  <input
-                    type="text"
+                  <label htmlFor="promo-name">Tên khuyến mãi</label>
+                  <input id="promo-name" type="text"
                     value={promotionForm.name}
                     onChange={(e) =>
                       setPromotionForm({
@@ -413,9 +412,8 @@ export default function AdminPromotions() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Giảm giá (%)</label>
-                  <input
-                    type="number"
+                  <label htmlFor="promo-discount">Giảm giá (%)</label>
+                  <input id="promo-discount" type="number"
                     min="0"
                     max="100"
                     value={promotionForm.discount_percent}
@@ -429,9 +427,8 @@ export default function AdminPromotions() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Ngày bắt đầu</label>
-                  <input
-                    type="date"
+                  <label htmlFor="promo-start">Ngày bắt đầu</label>
+                  <input id="promo-start" type="date"
                     value={promotionForm.start_date}
                     onChange={(e) =>
                       setPromotionForm({
@@ -443,9 +440,8 @@ export default function AdminPromotions() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Ngày kết thúc</label>
-                  <input
-                    type="date"
+                  <label htmlFor="promo-end">Ngày kết thúc</label>
+                  <input id="promo-end" type="date"
                     value={promotionForm.end_date}
                     onChange={(e) =>
                       setPromotionForm({
@@ -481,9 +477,8 @@ export default function AdminPromotions() {
               </h3>
               <form onSubmit={handleDiscountCodeSubmit}>
                 <div className="form-group">
-                  <label>Tên chương trình</label>
-                  <input
-                    type="text"
+                  <label htmlFor="dc-name">Tên chương trình</label>
+                  <input id="dc-name" type="text"
                     value={discountCodeForm.name}
                     onChange={(e) =>
                       setDiscountCodeForm({
@@ -495,9 +490,8 @@ export default function AdminPromotions() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Mã giảm giá</label>
-                  <input
-                    type="text"
+                  <label htmlFor="dc-code">Mã giảm giá</label>
+                  <input id="dc-code" type="text"
                     value={discountCodeForm.code}
                     onChange={(e) =>
                       setDiscountCodeForm({
@@ -509,9 +503,8 @@ export default function AdminPromotions() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Giảm giá (%)</label>
-                  <input
-                    type="number"
+                  <label htmlFor="dc-discount">Giảm giá (%)</label>
+                  <input id="dc-discount" type="number"
                     min="1"
                     max="100"
                     value={discountCodeForm.discount_percent}
@@ -525,9 +518,8 @@ export default function AdminPromotions() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Đơn tối thiểu (đ)</label>
-                  <input
-                    type="number"
+                  <label htmlFor="dc-min-order">Đơn tối thiểu (đ)</label>
+                  <input id="dc-min-order" type="number"
                     min="0"
                     value={discountCodeForm.min_order_value}
                     onChange={(e) =>
@@ -540,9 +532,8 @@ export default function AdminPromotions() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Ngày bắt đầu</label>
-                  <input
-                    type="date"
+                  <label htmlFor="dc-start">Ngày bắt đầu</label>
+                  <input id="dc-start" type="date"
                     value={discountCodeForm.start_date}
                     onChange={(e) =>
                       setDiscountCodeForm({
@@ -554,9 +545,8 @@ export default function AdminPromotions() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Ngày kết thúc</label>
-                  <input
-                    type="date"
+                  <label htmlFor="dc-end">Ngày kết thúc</label>
+                  <input id="dc-end" type="date"
                     value={discountCodeForm.end_date}
                     onChange={(e) =>
                       setDiscountCodeForm({
@@ -568,9 +558,8 @@ export default function AdminPromotions() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Giới hạn lượt dùng</label>
-                  <input
-                    type="number"
+                  <label htmlFor="dc-usage-limit">Giới hạn lượt dùng</label>
+                  <input id="dc-usage-limit" type="number"
                     min="1"
                     value={discountCodeForm.usage_limit}
                     onChange={(e) =>
@@ -583,8 +572,8 @@ export default function AdminPromotions() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Trạng thái</label>
-                  <button
+                  <span id="discount-status-label">Trạng thái</span>
+                  <button aria-labelledby="discount-status-label"
                     type="button"
                     className={`admin-statusToggle ${discountCodeForm.is_active ? "is-active" : "is-expired"}`}
                     onClick={() =>
