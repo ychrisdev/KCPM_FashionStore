@@ -49,7 +49,7 @@
           }
         }
       }
-      return Promise.reject(error);
+      throw error;
     },
   );
 
