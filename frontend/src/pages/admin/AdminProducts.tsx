@@ -820,9 +820,9 @@ export default function AdminProducts() {
                   </div>
 
                   <div className="form-group">
-                    <label>Tên sản phẩm</label>
-                    <input
-                      type="text"
+                    <label htmlFor="product-name">Tên sản phẩm</label>
+                      <input id="product-name" 
+                      type="text" 
                       value={formData.name}
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
@@ -832,8 +832,8 @@ export default function AdminProducts() {
                   </div>
 
                   <div className="form-group">
-                    <label>Mô tả</label>
-                    <textarea
+                    <label htmlFor="product-desc">Mô tả</label>
+                      <textarea id="product-desc" 
                       value={formData.description}
                       onChange={(e) =>
                         setFormData({
@@ -847,10 +847,9 @@ export default function AdminProducts() {
 
                   <div className="product-form__row2">
                     <div className="form-group">
-                      <label>Giá (đ)</label>
-                      <input
-                        type="number"
-                        step="1"
+                      <label htmlFor="product-price">Giá (đ)</label>
+                        <input id="product-price" 
+                        type="number" step="1" 
                         value={formData.price}
                         onChange={(e) =>
                           setFormData({ ...formData, price: e.target.value })
@@ -859,8 +858,8 @@ export default function AdminProducts() {
                       />
                     </div>
                     <div className="form-group">
-                      <label>Danh mục</label>
-                      <select
+                      <label htmlFor="product-category">Danh mục</label>
+                        <select id="product-category" 
                         value={formData.category_id}
                         onChange={(e) =>
                           setFormData({
@@ -881,8 +880,8 @@ export default function AdminProducts() {
                   </div>
 
                   <div className="form-group">
-                    <label>Khuyến mãi</label>
-                    <select
+                    <label htmlFor="product-promotion">Khuyến mãi</label>
+                      <select id="product-promotion" 
                       value={formData.promotion_id ?? ""}
                       onChange={(e) =>
                         setFormData({
@@ -917,7 +916,7 @@ export default function AdminProducts() {
 
                   {/* Ảnh size chart */}
                   <div className="form-group">
-                    <label>Ảnh bảng size</label>
+                    <label htmlFor="product-size-chart">Ảnh bảng size</label>
 
                     {editingProduct?.size_chart &&
                       !formData.clear_size_chart &&
@@ -993,16 +992,15 @@ export default function AdminProducts() {
                       </div>
                     )}
 
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleSizeChartUpload}
-                    />
+                    <input id="product-size-chart" 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleSizeChartUpload} />
                   </div>
 
                   {/* Hình ảnh sản phẩm */}
                   <div className="form-group">
-                    <label>Hình ảnh sản phẩm</label>
+                    <label htmlFor="product-images">Hình ảnh sản phẩm</label>
 
                     {editingProduct &&
                       (() => {
@@ -1036,11 +1034,10 @@ export default function AdminProducts() {
                         ) : null;
                       })()}
 
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={handleImageUpload}
+                    <input id="product-images" 
+                      type="file" 
+                      accept="image/*" multiple 
+                      onChange={handleImageUpload} 
                     />
 
                     {formData.upload_images &&
@@ -1286,10 +1283,8 @@ export default function AdminProducts() {
                                   aria-label="Tên size"
                                 />
                                 <div className="variant-quick-card__order-row">
-                                  <label>Thứ tự:</label>
-                                  <input
-                                    type="number"
-                                    value={quickAddSizeOrder}
+                                  <label htmlFor="size-order">Thứ tự:</label>
+                                    <input id="size-order" type="number" value={quickAddSizeOrder}
                                     min={0}
                                     onChange={(e) =>
                                       setQuickAddSizeOrder(
