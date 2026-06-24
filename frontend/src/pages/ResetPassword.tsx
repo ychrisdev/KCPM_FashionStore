@@ -4,21 +4,25 @@ import axios from "axios";
 import { auth } from "../api/client";
 import "../styles/pages/AuthPages.css";
 
+function extractDetailMessage(d: Record<string, unknown>): string | null {
+  if (typeof d.detail === "string") return d.detail;
+  if (Array.isArray(d.detail) && typeof d.detail[0] === "string") return d.detail[0];
+  return null;
+}
+
+function extractFieldMessage(d: Record<string, unknown>): string | null {
+  for (const v of Object.values(d)) {
+    if (Array.isArray(v) && typeof v[0] === "string") return v[0];
+    if (typeof v === "string") return v;
+  }
+  return null;
+}
+
 function apiErrorMessage(err: unknown, fallback: string): string {
   if (axios.isAxiosError(err)) {
     const d = err.response?.data as Record<string, unknown> | undefined;
-    if (d?.detail) {
-      if (typeof d.detail === "string") return d.detail;
-      if (Array.isArray(d.detail) && typeof d.detail[0] === "string") {
-        return d.detail[0];
-      }
-    }
-    if (d && typeof d === "object") {
-      for (const v of Object.values(d)) {
-        if (Array.isArray(v) && typeof v[0] === "string") return v[0];
-        if (typeof v === "string") return v;
-      }
-    }
+    if (d?.detail) return extractDetailMessage(d) ?? fallback;
+    if (d && typeof d === "object") return extractFieldMessage(d) ?? fallback;
   }
   if (err instanceof Error && err.message) return err.message;
   return fallback;
