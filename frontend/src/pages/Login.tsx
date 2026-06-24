@@ -64,7 +64,7 @@ export default function Login({ onLoginSuccess }: Readonly<LoginProps>) {
     }
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setLoading(true);
