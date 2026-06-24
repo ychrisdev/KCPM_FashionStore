@@ -30,7 +30,7 @@ function getFacebookRedirectUri(): string {
   return `${window.location.origin}/auth/facebook/callback`;
 }
 
-export default function Login({ onLoginSuccess }: LoginProps) {
+export default function Login({ onLoginSuccess }: Readonly<LoginProps>) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
