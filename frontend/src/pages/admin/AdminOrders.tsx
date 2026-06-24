@@ -78,7 +78,7 @@ function isPaymentNotSuccessful(gatewayStatus?: string) {
 }
 
 function formatVnd(value: string | number) {
-  const n = typeof value === "string" ? parseFloat(value) : value;
+  const n = typeof value === "string" ? Number.parseFloat(value) : value;
   if (Number.isNaN(n)) return String(value);
   return `${new Intl.NumberFormat("vi-VN").format(n)} đ`;
 }
@@ -105,7 +105,7 @@ const PAGE_SIZE = 10;
 export default function AdminOrders() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const page = parseInt(searchParams.get("page") || "1", 10);
+  const page = Number.parseInt(searchParams.get("page") || "1", 10);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [count, setCount] = useState(0);

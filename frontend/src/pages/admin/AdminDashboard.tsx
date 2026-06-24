@@ -59,7 +59,7 @@ function statsErrorMessage(err: unknown): string {
 }
 
 function formatVnd(value: string | number) {
-  const n = typeof value === 'number' ? value : parseFloat(String(value));
+  const n = typeof value === 'number' ? value : Number.parseFloat(String(value));
   if (Number.isNaN(n)) return String(value);
   return `${new Intl.NumberFormat('vi-VN').format(n)} đ`;
 }
@@ -257,7 +257,7 @@ function AdminDashboardBody({ stats }: { stats: AdminDashboardStats }) {
   const chartRevenueData = useMemo(() => {
     return stats.revenue_series.map((row) => ({
       ...row,
-      revenueNum: parseFloat(row.revenue) || 0,
+      revenueNum: Number.parseFloat(row.revenue) || 0,
     }));
   }, [stats.revenue_series]);
 
