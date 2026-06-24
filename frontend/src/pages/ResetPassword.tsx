@@ -34,7 +34,7 @@ export default function ResetPassword() {
   const userIdRaw = searchParams.get("user_id") ?? "";
 
   const userId = useMemo(() => {
-    const n = parseInt(userIdRaw, 10);
+    const n = Number.parseInt(userIdRaw, 10);
     return Number.isFinite(n) && n > 0 ? n : null;
   }, [userIdRaw]);
 
