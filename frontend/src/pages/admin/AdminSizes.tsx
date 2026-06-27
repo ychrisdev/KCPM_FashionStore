@@ -9,18 +9,29 @@ interface Size {
   order: number;
 }
 
-function getApiErrorMessage(error: unknown, fallback = "Có lỗi xảy ra!"): string {
-  const responseData = (error as { response?: { data?: unknown } })?.response?.data;
+function getApiErrorMessage(
+  error: unknown,
+  fallback = "Có lỗi xảy ra!",
+): string {
+  const responseData = (error as { response?: { data?: unknown } })?.response
+    ?.data;
   if (!responseData) return fallback;
   if (typeof responseData === "string") return responseData;
-  if (Array.isArray(responseData) && typeof responseData[0] === "string") return responseData[0];
+  if (Array.isArray(responseData) && typeof responseData[0] === "string")
+    return responseData[0];
   if (typeof responseData === "object") {
-    if ("detail" in responseData && typeof (responseData as { detail?: unknown }).detail === "string") {
+    if (
+      "detail" in responseData &&
+      typeof (responseData as { detail?: unknown }).detail === "string"
+    ) {
       return (responseData as { detail: string }).detail;
     }
-    const firstValue = Object.values(responseData as Record<string, unknown>)[0];
+    const firstValue = Object.values(
+      responseData as Record<string, unknown>,
+    )[0];
     if (typeof firstValue === "string") return firstValue;
-    if (Array.isArray(firstValue) && typeof firstValue[0] === "string") return firstValue[0];
+    if (Array.isArray(firstValue) && typeof firstValue[0] === "string")
+      return firstValue[0];
   }
   return fallback;
 }
@@ -36,7 +47,9 @@ export default function AdminSizes() {
   const [formError, setFormError] = useState("");
   const [formLoading, setFormLoading] = useState(false);
 
-  const [editingOrders, setEditingOrders] = useState<Record<number, number>>({});
+  const [editingOrders, setEditingOrders] = useState<Record<number, number>>(
+    {},
+  );
   const [savingOrderId, setSavingOrderId] = useState<number | null>(null);
 
   const loadSizes = async () => {
@@ -96,7 +109,8 @@ export default function AdminSizes() {
   };
 
   const handleDelete = async (id: number, name: string) => {
-    if (!confirm(`Xóa kích thước "${name}"? Thao tác này không thể hoàn tác.`)) return;
+    if (!confirm(`Xóa kích thước "${name}"? Thao tác này không thể hoàn tác.`))
+      return;
     try {
       await admin.sizes.delete(id);
       await loadSizes();
@@ -136,8 +150,8 @@ export default function AdminSizes() {
           <div>
             <h3>Quản lý kích thước</h3>
             <p className="page-header-desc">
-              Thêm, sửa, xóa size và điều chỉnh thứ tự hiển thị trên trang sản phẩm.{" "}
-              <strong>Số thứ tự nhỏ hơn = hiển thị trước.</strong>
+              Thêm, sửa, xóa size và điều chỉnh thứ tự hiển thị trên trang sản
+              phẩm. <strong>Số thứ tự nhỏ hơn = hiển thị trước.</strong>
             </p>
           </div>
           <button className="btn-primary" onClick={openAdd}>
@@ -158,14 +172,16 @@ export default function AdminSizes() {
             {sizesList.length === 0 ? (
               <tr>
                 <td colSpan={4} className="sizes-empty-cell">
-                  Chưa có kích thước nào. Bấm <strong>+ Thêm kích thước</strong> để bắt đầu.
+                  Chưa có kích thước nào. Bấm <strong>+ Thêm kích thước</strong>{" "}
+                  để bắt đầu.
                 </td>
               </tr>
             ) : (
               sizesList.map((s) => {
                 const currentOrder = editingOrders[s.id] ?? s.order;
                 const isDirty =
-                  editingOrders[s.id] !== undefined && editingOrders[s.id] !== s.order;
+                  editingOrders[s.id] !== undefined &&
+                  editingOrders[s.id] !== s.order;
                 return (
                   <tr key={s.id}>
                     <td className="sizes-id-cell">{s.id}</td>
@@ -186,7 +202,8 @@ export default function AdminSizes() {
                             }))
                           }
                           onKeyDown={(e) => {
-                            if (e.key === "Enter") handleSaveOrder(s, currentOrder);
+                            if (e.key === "Enter")
+                              handleSaveOrder(s, currentOrder);
                           }}
                         />
                         {isDirty && (
@@ -205,7 +222,10 @@ export default function AdminSizes() {
                       <button className="btn-edit" onClick={() => openEdit(s)}>
                         Sửa
                       </button>
-                      <button className="btn-delete" onClick={() => handleDelete(s.id, s.name)}>
+                      <button
+                        className="btn-delete"
+                        onClick={() => handleDelete(s.id, s.name)}
+                      >
                         Xóa
                       </button>
                     </td>
@@ -217,17 +237,11 @@ export default function AdminSizes() {
         </table>
 
         {showModal && (
-          <div
+          <button
+            type="button"
             className="modal-overlay"
-            role="button"
-            tabIndex={0}
             onClick={(e) => {
               if (e.target === e.currentTarget) setShowModal(false);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                if (e.target === e.currentTarget) setShowModal(false);
-              }
             }}
           >
             <div className="modal sizes-modal">
@@ -235,18 +249,23 @@ export default function AdminSizes() {
               <form onSubmit={handleSubmit}>
                 <div className="form-group">
                   <label htmlFor="size-name">Tên kích thước</label>
-                  <input id="size-name"
+                  <input
+                    id="size-name"
                     type="text"
                     placeholder="Vd: S, M, L, XL, 38, 40…"
                     value={formName}
-                    onChange={(e) => { setFormName(e.target.value); setFormError(""); }}
+                    onChange={(e) => {
+                      setFormName(e.target.value);
+                      setFormError("");
+                    }}
                     autoFocus
                     required
                   />
                 </div>
                 <div className="form-group">
                   <label htmlFor="size-order">Thứ tự hiển thị</label>
-                  <input id="size-order"
+                  <input
+                    id="size-order"
                     type="number"
                     min={0}
                     value={formOrder}
@@ -256,20 +275,26 @@ export default function AdminSizes() {
                     Số nhỏ hơn = hiển thị trước (vd: S=1, M=2, L=3…)
                   </p>
                 </div>
-                {formError && (
-                  <p className="sizes-form-error">{formError}</p>
-                )}
+                {formError && <p className="sizes-form-error">{formError}</p>}
                 <div className="form-actions">
-                  <button type="button" className="btn-secondary" onClick={() => setShowModal(false)}>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => setShowModal(false)}
+                  >
                     Hủy
                   </button>
-                  <button type="submit" className="btn-primary" disabled={formLoading}>
+                  <button
+                    type="submit"
+                    className="btn-primary"
+                    disabled={formLoading}
+                  >
                     {formLoading ? "Đang lưu…" : "Lưu"}
                   </button>
                 </div>
               </form>
             </div>
-          </div>
+          </button>
         )}
       </div>
     </AdminLayout>
