@@ -1,0 +1,32 @@
+[run]
+source =
+    accounts
+    cart
+    contact
+    core
+    orders
+    pages
+    payments
+    products
+    reviews
+    services
+    utils
+    wallets
+    wishlist
+branch = true
+omit =
+    */migrations/*
+    */tests.py
+    */test_*.py
+    admin_tests.py
+    manage.py
+    api/wsgi.py
+    api/asgi.py
+    .venv/*
+
+[report]
+precision = 2
+show_missing = true
+
+[xml]
+output = coverage.xml

@@ -15,8 +15,12 @@ pipeline {
         stage('Setup Python') {
             steps {
                 sh '''
-                    apt-get update
-                    apt-get install -y python3 python3-pip python3-venv nodejs npm
+                    if ! command -v python3 &> /dev/null; then
+                        apt-get update && apt-get install -y python3 python3-pip python3-venv
+                    fi
+                    if ! command -v node &> /dev/null; then
+                        apt-get update && apt-get install -y nodejs npm
+                    fi
                 '''
             }
         }
@@ -28,18 +32,24 @@ pipeline {
                         python3 -m venv .venv
                         . .venv/bin/activate
                         pip install -r requirements.txt
+                        pip install pytest pytest-cov pytest-django
                     '''
                 }
             }
         }
 
-        stage('Backend - Test') {
+        stage('Backend - Test & Coverage') {
             steps {
                 dir('backend') {
                     withCredentials([string(credentialsId: 'DJANGO_SECRET_KEY', variable: 'DJANGO_SECRET_KEY')]) {
                         sh '''
                             . .venv/bin/activate
-                            python3 -m pytest --cov=. --cov-report=xml:coverage.xml
+                            python3 -m pytest \
+                                --cov \
+                                --cov-branch \
+                                --cov-report=xml:coverage.xml \
+                                --cov-report=term-missing \
+                                -v
                         '''
                     }
                 }
@@ -66,20 +76,10 @@ pipeline {
             steps {
                 script {
                     def scannerHome = tool 'SonarScanner'
-
                     withSonarQubeEnv('SonarQube') {
                         withEnv(["SCANNER_HOME=${scannerHome}"]) {
                             sh(
-                                script: '''
-                                    $SCANNER_HOME/bin/sonar-scanner \
-                                    -Dsonar.projectKey=fashionstore \
-                                    -Dsonar.projectName=FashionStore \
-                                    -Dsonar.sources=. \
-                                    -Dsonar.python.version=3.13 \
-                                    -Dsonar.sourceEncoding=UTF-8 \
-                                    -Dsonar.python.coverage.reportPaths=backend/coverage.xml \
-                                    -Dsonar.token=$SONAR_TOKEN
-                                ''',
+                                script: '$SCANNER_HOME/bin/sonar-scanner -Dsonar.token=$SONAR_TOKEN',
                                 label: 'Run SonarScanner'
                             )
                         }
