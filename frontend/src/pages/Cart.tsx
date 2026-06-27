@@ -31,7 +31,7 @@ interface CartItemType {
 function getUnitPrice(item: CartItemType): number {
   const product = item.product;
   if (!product) return 0;
-  let price = parseFloat(String(product.price ?? 0));
+  let price = Number.parseFloat(String(product.price ?? 0));
   if (product.promotion?.discount_percent) {
     price = price * (1 - product.promotion.discount_percent / 100);
   }
