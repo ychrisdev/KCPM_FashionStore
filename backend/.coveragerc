@@ -1,18 +1,18 @@
 [run]
 source =
-    accounts
-    cart
-    contact
-    core
-    orders
-    pages
-    payments
-    products
-    reviews
-    services
-    utils
-    wallets
-    wishlist
+    backend/accounts
+    backend/cart
+    backend/contact
+    backend/core
+    backend/orders
+    backend/pages
+    backend/payments
+    backend/products
+    backend/reviews
+    backend/services
+    backend/utils
+    backend/wallets
+    backend/wishlist
 branch = true
 relative_files = true
 omit =

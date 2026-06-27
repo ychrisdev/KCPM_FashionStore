@@ -40,18 +40,17 @@ pipeline {
 
         stage('Backend - Test & Coverage') {
             steps {
-                dir('backend') {
-                    withCredentials([string(credentialsId: 'DJANGO_SECRET_KEY', variable: 'DJANGO_SECRET_KEY')]) {
-                        sh '''
-                            . .venv/bin/activate
-                            python3 -m pytest \
-                                --cov \
-                                --cov-branch \
-                                --cov-report=xml:coverage.xml \
-                                --cov-report=term-missing \
-                                -v
-                        '''
-                    }
+                withCredentials([string(credentialsId: 'DJANGO_SECRET_KEY', variable: 'DJANGO_SECRET_KEY')]) {
+                    sh '''
+                        . backend/.venv/bin/activate
+                        cd backend
+                        python3 -m pytest \
+                            --cov \
+                            --cov-branch \
+                            --cov-report=xml:../coverage.xml \
+                            --cov-report=term-missing \
+                            -v
+                    '''
                 }
             }
         }
