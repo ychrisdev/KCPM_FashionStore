@@ -219,7 +219,16 @@ export default function AdminSizes() {
         {showModal && (
           <div
             className="modal-overlay"
-            onClick={(e) => { if (e.target === e.currentTarget) setShowModal(false); }}
+            role="button"
+            tabIndex={0}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setShowModal(false);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                if (e.target === e.currentTarget) setShowModal(false);
+              }
+            }}
           >
             <div className="modal sizes-modal">
               <h3>{editingSize ? "Sửa kích thước" : "Thêm kích thước mới"}</h3>
