@@ -263,11 +263,11 @@ export default function ProductCardModal({
             <div className="product-options" style={{ marginBottom: 0 }}>
               {colors.length > 0 && (
                 <div className="option-group color-selection">
-                  <label>
+                  <label htmlFor="color-buttons">
                     Màu sắc:{" "}
                     <span className="color-name-label">{selectedColor}</span>
                   </label>
-                  <div className="color-buttons">
+                  <div className="color-buttons" id="color-buttons">
                     {colors.map((color) => {
                       const variant = variants.find(
                         (v) => v.color.name === color,
@@ -307,8 +307,8 @@ export default function ProductCardModal({
 
               {sizes.length > 0 && (
                 <div className="option-group size-selection">
-                  <label>Kích thước:</label>
-                  <div className="size-buttons">
+                  <label htmlFor="size-buttons">Kích thước:</label>
+                  <div className="size-buttons" id="size-buttons">
                     {sizes.map((size) => {
                       const variantForSize = variants.find(
                         (v) =>
@@ -345,8 +345,8 @@ export default function ProductCardModal({
               )}
 
               <div className="option-group quantity-selection">
-                <label>Số lượng:</label>
-                <div className="qty-row">
+                <label htmlFor="qty-row">Số lượng:</label>
+                <div className="qty-row" id="qty-row">
                   <div className="quantity-controls">
                     <button
                       type="button"
@@ -394,7 +394,7 @@ export default function ProductCardModal({
               {variantStock === 0
                 ? "Hết hàng"
                 : isAdding
-                  ? "Thêm vào giỏ hàng"
+                  ? "Đang thêm..."
                   : "Thêm vào giỏ hàng"}
             </button>
           </div>
