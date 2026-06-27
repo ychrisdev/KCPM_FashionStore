@@ -137,23 +137,32 @@ function ProductDetail() {
         }
         const [relatedRes, reviewsRes] = await Promise.all([
           products.related(productId),
-          reviewsApi.getByProduct(productId, reviewsPagination.current_page, reviewsPagination.page_size, reviewsFilter),
+          reviewsApi.getByProduct(
+            productId,
+            reviewsPagination.current_page,
+            reviewsPagination.page_size,
+            reviewsFilter,
+          ),
         ]);
         setRelatedProducts((relatedRes?.data ?? []) as Product[]);
-        const reviewsData = reviewsRes?.data ?? { results: [], count: 0, total_pages: 0 };
+        const reviewsData = reviewsRes?.data ?? {
+          results: [],
+          count: 0,
+          total_pages: 0,
+        };
         setReviewsList(
           (reviewsData.results as Review[]).filter(
             (r) => r.is_visible !== false,
           ),
         );
-        
+
         // Track total reviews count when no filter is applied
         if (reviewsFilter === null && reviewsData.count !== undefined) {
           setTotalReviewsCount(reviewsData.count);
         }
-        
+
         if (reviewsData.count !== undefined) {
-          setReviewsPagination(prev => ({
+          setReviewsPagination((prev) => ({
             ...prev,
             count: reviewsData.count,
             total_pages: reviewsData.total_pages,
@@ -170,7 +179,12 @@ function ProductDetail() {
     };
     setLoading(true);
     fetchData();
-  }, [id, reviewsPagination.current_page, reviewsPagination.page_size, reviewsFilter]);
+  }, [
+    id,
+    reviewsPagination.current_page,
+    reviewsPagination.page_size,
+    reviewsFilter,
+  ]);
 
   useEffect(() => {
     if (!product) {
@@ -365,23 +379,30 @@ function ProductDetail() {
       setShowReviewModal(false);
 
       const [reviewsRes, productRes] = await Promise.all([
-        reviewsApi.getByProduct(Number(id), reviewsPagination.current_page, reviewsPagination.page_size, reviewsFilter),
+        reviewsApi.getByProduct(
+          Number(id),
+          reviewsPagination.current_page,
+          reviewsPagination.page_size,
+          reviewsFilter,
+        ),
         products.get(Number(id)),
       ]);
-      const reviewsData = reviewsRes?.data ?? { results: [], count: 0, total_pages: 0 };
+      const reviewsData = reviewsRes?.data ?? {
+        results: [],
+        count: 0,
+        total_pages: 0,
+      };
       setReviewsList(
-        (reviewsData.results as Review[]).filter(
-          (r) => r.is_visible !== false,
-        ),
+        (reviewsData.results as Review[]).filter((r) => r.is_visible !== false),
       );
-      
+
       // Update total count if no filter
       if (reviewsFilter === null && reviewsData.count !== undefined) {
         setTotalReviewsCount(reviewsData.count);
       }
-      
+
       if (reviewsData.count !== undefined) {
-        setReviewsPagination(prev => ({
+        setReviewsPagination((prev) => ({
           ...prev,
           count: reviewsData.count,
           total_pages: reviewsData.total_pages,
@@ -548,8 +569,12 @@ function ProductDetail() {
                     key={img.id}
                     className={`thumb-item${selectedImage === img.image ? " active" : ""}`}
                     onClick={() => setSelectedImage(img.image)}
+                    onKeyDown={(e) =>
+                      e.key === "Enter" && setSelectedImage(img.image)
+                    }
                     role="button"
                     aria-label="Xem ảnh"
+                    tabIndex={0}
                   >
                     <img src={img.image} alt={product.name} />
                   </div>
@@ -637,11 +662,11 @@ function ProductDetail() {
           <div className="product-options">
             {colors.length > 0 && (
               <div className="option-group color-selection">
-                <label>
+                <label htmlFor="color-buttons-detail">
                   Màu sắc:{" "}
                   <span className="color-name-label">{selectedColor}</span>
                 </label>
-                <div className="color-buttons">
+                <div className="color-buttons" id="color-buttons-detail">
                   {colors.map((color) => {
                     const variant = variants.find(
                       (v) => v.color.name === color,
@@ -678,8 +703,8 @@ function ProductDetail() {
             )}
 
             <div className="option-group size-selection">
-              <label>Kích thước:</label>
-              <div className="size-buttons">
+              <label htmlFor="size-buttons-detail">Kích thước:</label>
+              <div className="size-buttons" id="size-buttons-detail">
                 {sizes.map((size) => {
                   const variantForSize = variants.find(
                     (v) =>
@@ -712,8 +737,8 @@ function ProductDetail() {
             </div>
 
             <div className="option-group quantity-selection">
-              <label>Số lượng:</label>
-              <div className="qty-row">
+              <label htmlFor="qty-row-detail">Số lượng:</label>
+              <div className="qty-row" id="qty-row-detail">
                 <div className="quantity-controls">
                   <button
                     type="button"
@@ -828,18 +853,29 @@ function ProductDetail() {
               >
                 Bảng kích thước:
               </p>
-              <img
-                src={product.size_chart}
-                alt="Bảng kích thước sản phẩm"
-                className="size-chart-img"
+              <button
+                type="button"
                 onClick={() => setShowSizeChart(true)}
+                aria-label="Xem bảng kích thước đầy đủ"
                 style={{
-                  borderRadius: "8px",
+                  background: "none",
+                  border: "none",
+                  padding: 0,
                   cursor: "zoom-in",
-                  border: "1px solid #eee",
                 }}
-                title="Nhấn để phóng to"
-              />
+              >
+                <img
+                  src={product.size_chart}
+                  alt="Bảng kích thước sản phẩm"
+                  className="size-chart-img"
+                  style={{
+                    borderRadius: "8px",
+                    cursor: "zoom-in",
+                    border: "1px solid #eee",
+                  }}
+                  title="Nhấn để phóng to"
+                />
+              </button>
               <p
                 style={{ fontSize: "0.78rem", color: "#888", marginTop: "4px" }}
               >
@@ -902,7 +938,9 @@ function ProductDetail() {
         {totalReviewsCount > 0 && (
           <>
             <div className="reviews-summary">
-              <span className="avg-score">{Number(averageRating).toFixed(1)}</span>
+              <span className="avg-score">
+                {Number(averageRating).toFixed(1)}
+              </span>
               <div>
                 <div className="avg-stars">
                   {[1, 2, 3, 4, 5].map((s) => (
@@ -931,7 +969,10 @@ function ProductDetail() {
                     className={`filter-star-btn${reviewsFilter === star ? " active" : ""}`}
                     onClick={() => {
                       setReviewsFilter(reviewsFilter === star ? null : star);
-                      setReviewsPagination(prev => ({ ...prev, current_page: 1 }));
+                      setReviewsPagination((prev) => ({
+                        ...prev,
+                        current_page: 1,
+                      }));
                     }}
                   >
                     <span className="star-count">{star}</span>
@@ -945,7 +986,10 @@ function ProductDetail() {
                   className="clear-filter-btn"
                   onClick={() => {
                     setReviewsFilter(null);
-                    setReviewsPagination(prev => ({ ...prev, current_page: 1 }));
+                    setReviewsPagination((prev) => ({
+                      ...prev,
+                      current_page: 1,
+                    }));
                   }}
                 >
                   Xoá lọc
@@ -956,11 +1000,13 @@ function ProductDetail() {
         )}
 
         {/* Show message when no reviews match filter */}
-        {totalReviewsCount > 0 && reviewsList.length === 0 && reviewsFilter !== null && (
-          <div className="no-reviews">
-            Không có đánh giá nào với mức sao đã chọn.
-          </div>
-        )}
+        {totalReviewsCount > 0 &&
+          reviewsList.length === 0 &&
+          reviewsFilter !== null && (
+            <div className="no-reviews">
+              Không có đánh giá nào với mức sao đã chọn.
+            </div>
+          )}
 
         {reviewsList.length > 0 ? (
           <div className="reviews-list">
@@ -1036,18 +1082,31 @@ function ProductDetail() {
               type="button"
               className="pagination-btn"
               disabled={reviewsPagination.current_page === 1}
-              onClick={() => setReviewsPagination(prev => ({ ...prev, current_page: prev.current_page - 1 }))}
+              onClick={() =>
+                setReviewsPagination((prev) => ({
+                  ...prev,
+                  current_page: prev.current_page - 1,
+                }))
+              }
             >
               ← Trước
             </button>
             <span className="pagination-info">
-              Trang {reviewsPagination.current_page} / {reviewsPagination.total_pages}
+              Trang {reviewsPagination.current_page} /{" "}
+              {reviewsPagination.total_pages}
             </span>
             <button
               type="button"
               className="pagination-btn"
-              disabled={reviewsPagination.current_page === reviewsPagination.total_pages}
-              onClick={() => setReviewsPagination(prev => ({ ...prev, current_page: prev.current_page + 1 }))}
+              disabled={
+                reviewsPagination.current_page === reviewsPagination.total_pages
+              }
+              onClick={() =>
+                setReviewsPagination((prev) => ({
+                  ...prev,
+                  current_page: prev.current_page + 1,
+                }))
+              }
             >
               Sau →
             </button>
@@ -1143,8 +1202,11 @@ function ProductDetail() {
             <form onSubmit={handleSubmitReview}>
               {reviewVariantOptions.length > 1 && (
                 <div className="form-group">
-                  <label>Phân loại đã mua</label>
+                  <label htmlFor="review-variant-select">
+                    Phân loại đã mua
+                  </label>
                   <select
+                    id="review-variant-select"
                     value={reviewSelectedVariantId}
                     onChange={(e) =>
                       setReviewSelectedVariantId(Number(e.target.value))
@@ -1177,8 +1239,8 @@ function ProductDetail() {
               )}
 
               <div className="form-group">
-                <label>Đánh giá của bạn</label>
-                <div className="star-picker">
+                <label htmlFor="star-picker">Đánh giá của bạn</label>
+                <div className="star-picker" id="star-picker">
                   {[1, 2, 3, 4, 5].map((s) => (
                     <span
                       key={s}
@@ -1188,6 +1250,8 @@ function ProductDetail() {
                       }
                       role="button"
                       aria-label={`${s} sao`}
+                      tabIndex={0}
+                      onKeyDown={(e) => e.key === "Enter" && setReviewForm({ ...reviewForm, rating: s })}
                     >
                       ★
                     </span>
@@ -1196,8 +1260,9 @@ function ProductDetail() {
               </div>
 
               <div className="form-group">
-                <label>Loại phản hồi</label>
+                <label htmlFor="feedback-type-select">Loại phản hồi</label>
                 <select
+                  id="feedback-type-select"
                   value={reviewForm.feedback_type}
                   onChange={(e) =>
                     setReviewForm({
@@ -1215,10 +1280,11 @@ function ProductDetail() {
               </div>
 
               <div className="form-group">
-                <label>
+                <label htmlFor="review-content">
                   Nội dung <span className="label-optional">(tuỳ chọn)</span>
                 </label>
                 <textarea
+                  id="review-content"
                   value={reviewForm.content}
                   onChange={(e) =>
                     setReviewForm({ ...reviewForm, content: e.target.value })
