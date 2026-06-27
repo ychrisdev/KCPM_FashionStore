@@ -134,8 +134,13 @@ export default function ProductCard({
     <>
       <div
         onClick={() => navigate(`/product/${product.id}`)}
+        onKeyDown={(e) =>
+          e.key === "Enter" && navigate(`/product/${product.id}`)
+        }
         className="productCard"
         style={{ cursor: "pointer" }}
+        role="button"
+        tabIndex={0}
       >
         <div className="productCardImageWrapper">
           <img
