@@ -1095,7 +1095,7 @@ export default function AdminProducts() {
               role="dialog"
               aria-modal="true"
               aria-labelledby="variant-modal-title"
-              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
             >
               <div className="variant-modal__layout">
                 {/* Cột trái — ảnh + thumbnail */}
@@ -1189,7 +1189,7 @@ export default function AdminProducts() {
                                 className="variant-quick-card__dot"
                                 style={{ background: "#6366f1" }}
                                 aria-hidden
-                              />
+                              />{" "}
                               Màu sắc
                             </div>
                             {!showQuickAddColor ? (
@@ -1259,7 +1259,7 @@ export default function AdminProducts() {
                                 className="variant-quick-card__dot"
                                 style={{ background: "#0ea5e9" }}
                                 aria-hidden
-                              />
+                              />{" "}
                               Kích thước
                             </div>
                             {!showQuickAddSize ? (
