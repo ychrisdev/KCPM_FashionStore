@@ -1,20 +1,19 @@
 [run]
 source =
-    backend/accounts
-    backend/cart
-    backend/contact
-    backend/core
-    backend/orders
-    backend/pages
-    backend/payments
-    backend/products
-    backend/reviews
-    backend/services
-    backend/utils
-    backend/wallets
-    backend/wishlist
+    accounts
+    cart
+    contact
+    core
+    orders
+    pages
+    payments
+    products
+    reviews
+    services
+    utils
+    wallets
+    wishlist
 branch = true
-relative_files = true
 omit =
     */migrations/*
     */tests.py
