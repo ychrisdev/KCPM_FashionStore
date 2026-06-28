@@ -50,7 +50,6 @@ pipeline {
                                 --cov-report=xml:coverage.xml \
                                 --cov-report=term-missing \
                                 -v
-                            sed -i 's|<class filename="|<class filename="backend/|g' coverage.xml
                         '''
                     }
                 }
