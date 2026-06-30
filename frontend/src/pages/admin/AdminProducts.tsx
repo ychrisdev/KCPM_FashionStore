@@ -1095,7 +1095,6 @@ export default function AdminProducts() {
               role="dialog"
               aria-modal="true"
               aria-labelledby="variant-modal-title"
-              onKeyDown={(e) => e.stopPropagation()}
             >
               <div className="variant-modal__layout">
                 {/* Cột trái — ảnh + thumbnail */}
