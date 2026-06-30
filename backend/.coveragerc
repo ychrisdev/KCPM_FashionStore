@@ -1,18 +1,5 @@
 [run]
-source =
-    accounts
-    cart
-    contact
-    core
-    orders
-    pages
-    payments
-    products
-    reviews
-    services
-    utils
-    wallets
-    wishlist
+source = .
 branch = true
 omit =
     */migrations/*
