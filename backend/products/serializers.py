@@ -110,6 +110,11 @@ class ProductVariantSerializer(serializers.ModelSerializer):
             base = base * (Decimal(100) - Decimal(promo.discount_percent)) / Decimal(100)
         return int(base.quantize(Decimal("1"), rounding=ROUND_HALF_UP))
 
+    def validate_price(self, value):
+        if value is not None and value <= 0:
+            raise serializers.ValidationError("Giá biến thể phải lớn hơn 0.")
+        return value
+
     def validate(self, attrs):
         product = attrs.get("product") or (
             self.instance.product if self.instance else None

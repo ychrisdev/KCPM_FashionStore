@@ -571,6 +571,13 @@ export default function AdminProducts() {
     if (!selectedProduct) return;
     if (!canManageVariantStock) return;
 
+    if (variantForm.price !== null && variantForm.price <= 0) {
+      alert(
+        "Giá biến thể phải lớn hơn 0 (hoặc để trống để dùng giá sản phẩm).",
+      );
+      return;
+    }
+
     const variantPayload = {
       product_id: selectedProduct.id,
       color_id: variantForm.color_id,
@@ -1504,7 +1511,7 @@ export default function AdminProducts() {
                               <input
                                 id="vf-price"
                                 type="number"
-                                min="0"
+                                min="1"
                                 inputMode="numeric"
                                 placeholder={`Mặc định: ${Number(selectedProduct.price).toLocaleString("vi-VN")}đ`}
                                 value={variantForm.price ?? ""}
@@ -1514,7 +1521,7 @@ export default function AdminProducts() {
                                     price:
                                       e.target.value === ""
                                         ? null
-                                        : Math.max(0, Number(e.target.value)),
+                                        : Math.max(1, Number(e.target.value)),
                                   })
                                 }
                               />

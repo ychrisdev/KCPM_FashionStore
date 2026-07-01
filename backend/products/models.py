@@ -75,7 +75,10 @@ class ProductVariant(models.Model):
     color = models.ForeignKey(Color, on_delete=models.CASCADE)
     size = models.ForeignKey(Size, on_delete=models.CASCADE)
     stock = models.IntegerField()
-    price = models.IntegerField(null=True, blank=True)
+    price = models.IntegerField(
+        null=True, blank=True,
+        validators=[MinValueValidator(1, message="Giá biến thể phải lớn hơn 0.")]
+    )
     def get_price(self):
         return self.price if self.price is not None else self.product.price
 
