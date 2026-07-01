@@ -2,6 +2,7 @@
 source = .
 branch = true
 omit =
+    */management/commands/*
     */migrations/*
     */tests.py
     */test_*.py
