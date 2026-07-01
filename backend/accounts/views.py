@@ -553,13 +553,12 @@ class GoogleLoginView(APIView):
                     last_name=userinfo.get('family_name', ''),
                 )
 
-                Profile.objects.create(
+                profile, _ = Profile.objects.get_or_create(
                     user=user,
-                    google_id=google_id,
-                    phone='',
-                    address='',
-                    role=RoleChoices.CUSTOMER
+                    defaults={"phone": "", "address": "", "role": RoleChoices.CUSTOMER},
                 )
+                profile.google_id = google_id
+                profile.save()
 
             # Generate JWT tokens
             refresh = RefreshToken.for_user(user)

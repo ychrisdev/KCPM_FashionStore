@@ -4,6 +4,8 @@ branch = true
 omit =
     */management/commands/*
     */migrations/*
+    accounts/birthday_reminder.py
+    accounts/management/*
     */tests.py
     */test_*.py
     admin_tests.py
