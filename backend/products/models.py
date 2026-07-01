@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class Category(models.Model):
@@ -16,7 +16,12 @@ class Category(models.Model):
         return self.name
 class Promotion(models.Model):
     name = models.CharField(max_length=100)
-    discount_percent = models.IntegerField()
+    discount_percent = models.IntegerField(
+        validators=[
+            MinValueValidator(1, message="% giảm giá phải lớn hơn 0."),
+            MaxValueValidator(100, message="% giảm giá không được vượt quá 100."),
+        ]
+    )
     start_date = models.DateField()
     end_date = models.DateField()
 

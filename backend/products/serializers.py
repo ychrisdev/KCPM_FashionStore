@@ -39,6 +39,13 @@ class PromotionSerializer(serializers.ModelSerializer):
 
     def get_is_active(self, obj) -> bool:
         return obj.is_active
+    
+    def validate_discount_percent(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("% giảm giá phải lớn hơn 0.")
+        if value > 100:
+            raise serializers.ValidationError("% giảm giá không được vượt quá 100.")
+        return value
 
     def validate(self, attrs):
         start_date = attrs.get("start_date", getattr(self.instance, "start_date", None))
