@@ -5,6 +5,7 @@ omit =
     */management/commands/*
     */migrations/*
     accounts/birthday_reminder.py
+    accounts/generate_birthday_voucher.py
     accounts/management/*
     */tests.py
     */test_*.py

@@ -446,7 +446,7 @@ class GoogleCallbackView(APIView):
             logger.exception("Lỗi kết nối tới Google OAuth API")
             return Response(
                 {"error": "Không thể kết nối tới Google, vui lòng thử lại sau."},
-                status=status.HTTP_502_BAD_GATEWAY,
+                status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception:
             logger.exception("Lỗi xác thực Google")
@@ -663,7 +663,7 @@ class FacebookCallbackView(APIView):
             logger.exception("Lỗi kết nối tới Facebook Graph API (callback)")
             return Response(
                 {"error": "Không thể kết nối tới Facebook, vui lòng thử lại sau."},
-                status=status.HTTP_502_BAD_GATEWAY,
+                status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception:
             logger.exception("Lỗi xác thực Facebook (callback)")
@@ -834,7 +834,7 @@ class FacebookLoginView(APIView):
             logger.exception("Lỗi kết nối tới Facebook Graph API (login)")
             return Response(
                 {"error": "Không thể kết nối tới Facebook, vui lòng thử lại sau."},
-                status=status.HTTP_502_BAD_GATEWAY,
+                status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception:
             logger.exception("Lỗi xử lý xác thực Facebook (login)")
