@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.core.validators import MinValueValidator
 
 
 class Category(models.Model):
@@ -32,7 +33,7 @@ class Product(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField()
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    price = models.IntegerField()
+    price = models.IntegerField(validators=[MinValueValidator(1, message="Giá sản phẩm phải lớn hơn 0.")])
     promotion = models.ForeignKey(Promotion, on_delete=models.SET_NULL, null=True, blank=True)
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=0)
     sold_count = models.IntegerField(default=0)

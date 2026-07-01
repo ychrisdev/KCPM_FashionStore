@@ -254,6 +254,11 @@ export default function AdminProducts() {
 
   const handleSubmitProduct = async (e: React.FormEvent) => {
     e.preventDefault();
+    const priceNum = Number(formData.price);
+    if (!formData.price || priceNum <= 0) {
+      alert("Giá sản phẩm phải lớn hơn 0.");
+      return;
+    }
     try {
       const formDataToSend = new FormData();
       formDataToSend.append("name", formData.name);
@@ -821,8 +826,9 @@ export default function AdminProducts() {
 
                   <div className="form-group">
                     <label htmlFor="product-name">Tên sản phẩm</label>
-                      <input id="product-name" 
-                      type="text" 
+                    <input
+                      id="product-name"
+                      type="text"
                       value={formData.name}
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
@@ -833,7 +839,8 @@ export default function AdminProducts() {
 
                   <div className="form-group">
                     <label htmlFor="product-desc">Mô tả</label>
-                      <textarea id="product-desc" 
+                    <textarea
+                      id="product-desc"
                       value={formData.description}
                       onChange={(e) =>
                         setFormData({
@@ -848,8 +855,11 @@ export default function AdminProducts() {
                   <div className="product-form__row2">
                     <div className="form-group">
                       <label htmlFor="product-price">Giá (đ)</label>
-                        <input id="product-price" 
-                        type="number" step="1" 
+                      <input
+                        id="product-price"
+                        type="number"
+                        step="1"
+                        min="1"
                         value={formData.price}
                         onChange={(e) =>
                           setFormData({ ...formData, price: e.target.value })
@@ -859,7 +869,8 @@ export default function AdminProducts() {
                     </div>
                     <div className="form-group">
                       <label htmlFor="product-category">Danh mục</label>
-                        <select id="product-category" 
+                      <select
+                        id="product-category"
                         value={formData.category_id}
                         onChange={(e) =>
                           setFormData({
@@ -881,7 +892,8 @@ export default function AdminProducts() {
 
                   <div className="form-group">
                     <label htmlFor="product-promotion">Khuyến mãi</label>
-                      <select id="product-promotion" 
+                    <select
+                      id="product-promotion"
                       value={formData.promotion_id ?? ""}
                       onChange={(e) =>
                         setFormData({
@@ -992,10 +1004,12 @@ export default function AdminProducts() {
                       </div>
                     )}
 
-                    <input id="product-size-chart" 
-                      type="file" 
-                      accept="image/*" 
-                      onChange={handleSizeChartUpload} />
+                    <input
+                      id="product-size-chart"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleSizeChartUpload}
+                    />
                   </div>
 
                   {/* Hình ảnh sản phẩm */}
@@ -1023,7 +1037,9 @@ export default function AdminProducts() {
                                   <button
                                     type="button"
                                     className="image-preview-item__del"
-                                    onClick={() => handleMarkImageDelete(img.id)}
+                                    onClick={() =>
+                                      handleMarkImageDelete(img.id)
+                                    }
                                   >
                                     Xóa
                                   </button>
@@ -1034,10 +1050,12 @@ export default function AdminProducts() {
                         ) : null;
                       })()}
 
-                    <input id="product-images" 
-                      type="file" 
-                      accept="image/*" multiple 
-                      onChange={handleImageUpload} 
+                    <input
+                      id="product-images"
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleImageUpload}
                     />
 
                     {formData.upload_images &&
@@ -1283,7 +1301,10 @@ export default function AdminProducts() {
                                 />
                                 <div className="variant-quick-card__order-row">
                                   <label htmlFor="size-order">Thứ tự:</label>
-                                    <input id="size-order" type="number" value={quickAddSizeOrder}
+                                  <input
+                                    id="size-order"
+                                    type="number"
+                                    value={quickAddSizeOrder}
                                     min={0}
                                     onChange={(e) =>
                                       setQuickAddSizeOrder(
