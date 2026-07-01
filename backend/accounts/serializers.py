@@ -15,9 +15,16 @@ PASSWORD_MISMATCH_ERROR = "Mật khẩu xác nhận không khớp" # NOSONAR
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """Cho phép đăng nhập bằng username hoặc email; thông báo lỗi tiếng Việt."""
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["username"].required = False
+        self.fields["username"].allow_blank = True
+        self.fields["password"].required = False
+        self.fields["password"].allow_blank = True
+
     def validate(self, attrs):
         username_or_email = (attrs.get("username") or "").strip()
-        password = attrs.get("password") # nosonar
+        password = attrs.get("password")
 
         if not username_or_email or not password:
             raise serializers.ValidationError(
@@ -32,9 +39,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         if not user:
             raise serializers.ValidationError(
-                {
-                    "detail": "Email/tên đăng nhập hoặc mật khẩu không đúng.",
-                }
+                {"detail": "Email/tên đăng nhập hoặc mật khẩu không đúng."}
             )
         if not user.is_active:
             raise serializers.ValidationError(
@@ -42,9 +47,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             )
         if not user.check_password(password):
             raise serializers.ValidationError(
-                {
-                    "detail": "Email/tên đăng nhập hoặc mật khẩu không đúng.",
-                }
+                {"detail": "Email/tên đăng nhập hoặc mật khẩu không đúng."}
             )
 
         refresh = RefreshToken.for_user(user)
