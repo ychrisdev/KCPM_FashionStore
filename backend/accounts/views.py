@@ -13,6 +13,8 @@ from django.template.loader import render_to_string
 from urllib.parse import quote, quote_plus, urlencode
 
 import requests
+import logging
+
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 
@@ -35,6 +37,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 _LOCAL_HOST = "//localhost"
 _LOCAL_IP = "//127.0.0.1"
 
+logger = logging.getLogger(__name__)
 def _password_reset_email_bodies(user: User, reset_url: str) -> tuple[str, str]:
     """Nội dung email dạng text + HTML (template trong templates/emails/)."""
     display_name = (user.get_full_name() or "").strip() or user.username
@@ -439,10 +442,18 @@ class GoogleCallbackView(APIView):
                     "first_name": user.first_name, "last_name": user.last_name,
                 },
             })
-        except requests.exceptions.RequestException as e:
-            return Response({"error": f"Lỗi kết nối với Google: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({"error": f"Lỗi xác thực Google: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+        except requests.exceptions.RequestException:
+            logger.exception("Lỗi kết nối tới Google OAuth API")
+            return Response(
+                {"error": "Không thể kết nối tới Google, vui lòng thử lại sau."},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+        except Exception:
+            logger.exception("Lỗi xác thực Google")
+            return Response(
+                {"error": "Đã có lỗi xảy ra khi xác thực với Google, vui lòng thử lại sau."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         
 def _exchange_google_code(code: str, redirect_uri: str) -> dict:
     """Đổi code lấy access_token, trả raise_for_status nếu lỗi."""
@@ -646,10 +657,20 @@ class FacebookCallbackView(APIView):
                     "first_name": user.first_name, "last_name": user.last_name,
                 },
             })
-        except requests.exceptions.RequestException as e:
-            return Response({"error": f"Lỗi kết nối với Facebook: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({"error": f"Lỗi xác thực Facebook: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+        except requests.exceptions.RequestException:
+            # KHÔNG trả str(e) ra ngoài: exception của requests có thể chứa
+            # URL đầy đủ, bao gồm client_secret. Chỉ ghi log ở server.
+            logger.exception("Lỗi kết nối tới Facebook Graph API (callback)")
+            return Response(
+                {"error": "Không thể kết nối tới Facebook, vui lòng thử lại sau."},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+        except Exception:
+            logger.exception("Lỗi xác thực Facebook (callback)")
+            return Response(
+                {"error": "Đã có lỗi xảy ra khi xác thực với Facebook, vui lòng thử lại sau."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 def _exchange_facebook_code(code: str) -> dict | Response:
     """Trả dict tokens nếu OK, hoặc Response lỗi để return luôn."""
@@ -809,11 +830,15 @@ class FacebookLoginView(APIView):
                 }
             })
 
-        except requests.exceptions.RequestException as e:
-            return Response({
-                "error": f"Lỗi xác thực Facebook: {str(e)}"
-            }, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({
-                "error": f"Lỗi xử lý: {str(e)}"
-            }, status=status.HTTP_400_BAD_REQUEST)
+        except requests.exceptions.RequestException:
+            logger.exception("Lỗi kết nối tới Facebook Graph API (login)")
+            return Response(
+                {"error": "Không thể kết nối tới Facebook, vui lòng thử lại sau."},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+        except Exception:
+            logger.exception("Lỗi xử lý xác thực Facebook (login)")
+            return Response(
+                {"error": "Đã có lỗi xảy ra khi xác thực với Facebook, vui lòng thử lại sau."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
