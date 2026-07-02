@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 
 import requests
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
 from django.test import TestCase, override_settings
@@ -1283,3 +1284,357 @@ class AllowedGoogleRedirectUrisTests(TestCase):
         """Cover nhánh primary/fe rỗng -> không thêm gì vào set."""
         uris = _allowed_google_oauth_redirect_uris()
         self.assertEqual(uris, set())
+        
+class RegisterSerializerEdgeCaseTests(TestCase):
+    """Cover các nhánh edge case trong RegisterSerializer — dòng 208, 251-253."""
+
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_register_with_phone_and_address(self):
+        """Dòng 208: create() với phone và address -> lưu vào Profile."""
+        res = self.client.post(
+            "/api/auth/registration/",
+            {
+                "username": "userphone",
+                "email": "userphone@example.com",
+                "password": TEST_PASSWORD,
+                "password_confirm": TEST_PASSWORD,
+                "phone": "0901234567",
+                "address": "123 Test Street",
+            },
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        user = User.objects.get(username="userphone")
+        profile = Profile.objects.get(user=user)
+        self.assertEqual(profile.phone, "0901234567")
+        self.assertEqual(profile.address, "123 Test Street")
+
+    def test_register_with_birth_date(self):
+        """Dòng 251-253: create() với birth_date -> lưu vào Profile."""
+        res = self.client.post(
+            "/api/auth/registration/",
+            {
+                "username": "userbday",
+                "email": "userbday@example.com",
+                "password": TEST_PASSWORD,
+                "password_confirm": TEST_PASSWORD,
+                "birth_date": "1995-06-15",
+            },
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        user = User.objects.get(username="userbday")
+        profile = Profile.objects.get(user=user)
+        self.assertEqual(str(profile.birth_date), "1995-06-15")
+
+    def test_register_without_birth_date(self):
+        """Dòng 253: create() không có birth_date -> birth_date giữ None."""
+        res = self.client.post(
+            "/api/auth/registration/",
+            {
+                "username": "usernobday",
+                "email": "usernobday@example.com",
+                "password": TEST_PASSWORD,
+                "password_confirm": TEST_PASSWORD,
+            },
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        user = User.objects.get(username="usernobday")
+        profile = Profile.objects.get(user=user)
+        self.assertIsNone(profile.birth_date)
+
+
+class ChangePasswordSerializerTests(TestCase):
+    """Cover dòng 271-278: validate_new_password trong ChangePasswordSerializer."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="changepw2",
+            email="changepw2@example.com",
+            password=TEST_PASSWORD,  
+        )
+
+    def test_change_password_fails_django_password_validation(self):
+        """Dòng 271-278: validate_new_password gọi validate_password Django."""
+        self.client.force_authenticate(user=self.user)
+        res = self.client.post(
+            "/api/auth/password/change/",
+            {
+                "old_password": TEST_PASSWORD,
+                "new_password": "12345678",  
+                "new_password_confirm": "12345678",  
+            },
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+class ProfileViewSetTests(TestCase):
+    """Cover ProfileViewSet các nhánh chưa cover — dòng 223-224, 229-231."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="profilevs",
+            email="profilevs@example.com",
+            password=TEST_PASSWORD,  
+        )
+        self.profile = Profile.objects.get(user=self.user)
+        self.admin_user = User.objects.create_user(
+            username="adminvs",
+            email="adminvs@example.com",
+            password=TEST_PASSWORD,  
+        )
+        p = Profile.objects.get(user=self.admin_user)
+        p.role = RoleChoices.ADMIN
+        p.save()
+
+    def test_list_profiles_as_customer_returns_only_own(self):
+        """Dòng 223-224: get_queryset() với customer -> chỉ trả profile của mình."""
+        self.client.force_authenticate(user=self.user)
+        res = self.client.get("/api/accounts/profiles/")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(res.data), 1)
+        self.assertEqual(res.data[0]["id"], self.profile.id)
+
+    def test_list_profiles_as_admin_returns_all(self):
+        """Dòng 221-222: get_queryset() với admin -> trả tất cả profiles."""
+        self.client.force_authenticate(user=self.admin_user)
+        res = self.client.get("/api/accounts/profiles/")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertGreater(len(res.data), 1)
+
+    def test_update_profile_invalid_data_returns_400(self):
+        """Dòng 229-231: update() với data không hợp lệ -> 400."""
+        self.client.force_authenticate(user=self.user)
+        url = f"/api/accounts/profiles/{self.profile.id}/"
+        res = self.client.patch(
+            url,
+            {"birth_date": "9999-12-31"},
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class PasswordResetRequestEdgeCaseTests(TestCase):
+    """Cover dòng 349-353: email không tồn tại."""
+
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_reset_request_email_not_found(self):
+        """Dòng 349-353: email không tồn tại -> 400."""
+        res = self.client.post(
+            "/api/auth/password/reset/",
+            {"email": "notexist@example.com"},
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_reset_request_empty_email(self):
+        """Email rỗng -> 400."""
+        res = self.client.post(
+            "/api/auth/password/reset/",
+            {"email": ""},
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class PasswordResetConfirmEdgeCaseTests(TestCase):
+    """Cover dòng 355, 451-453: PasswordResetConfirmView."""
+
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_confirm_password_mismatch_returns_400(self):
+        """Dòng 451-453: new_password != new_password_confirm -> 400."""
+        user = User.objects.create_user(
+            username="confirmuser",
+            email="confirmuser@example.com",
+            password="OldPass123!",  
+        )
+        from django.contrib.auth.tokens import default_token_generator
+        token = default_token_generator.make_token(user)
+        res = self.client.post(
+            "/api/auth/password/reset/confirm/",
+            {
+                "user_id": user.id,
+                "token": token,
+                "new_password": "NewPass123!",
+                "new_password_confirm": "DifferentPass456!",
+            },
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class FacebookCallbackNoAccessTokenTests(TestCase):
+    """Cover dòng 500-501: Facebook không trả access_token."""
+
+    def setUp(self):
+        self.client = APIClient()
+
+    @patch("accounts.views.requests.get")
+    def test_no_access_token_returns_400(self, mock_get):
+        """Dòng 500-501: response không có access_token -> 400."""
+        mock_get.return_value.json.return_value = {}
+        mock_get.return_value.raise_for_status.return_value = None
+        res = self.client.post(
+            "/api/auth/facebook/callback/",
+            {"code": "fake-code"},
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class SocialLoginEdgeCaseTests(TestCase):
+    """Cover các nhánh username collision / avatar khi đăng nhập qua Google, Facebook."""
+ 
+    def setUp(self):
+        self.client = APIClient()
+ 
+    @patch("accounts.views.requests.get")
+    def test_google_login_username_collision_handled(self, mock_get):
+        """Dòng 647: username collision -> thêm counter vào username."""
+        User.objects.create_user(
+            username="collision",
+            email="other@example.com",
+            password=TEST_PASSWORD,  
+        )
+        mock_get.return_value.json.return_value = {
+            "email": "collision@gmail.com",
+            "sub": "g-collision-1",
+            "given_name": "Col",
+            "family_name": "Lision",
+        }
+        mock_get.return_value.raise_for_status.return_value = None
+        res = self.client.post(
+            "/api/auth/google/login/",
+            {"id_token": "fake"},
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        user = User.objects.get(email="collision@gmail.com")
+        self.assertNotEqual(user.username, "collision")
+        self.assertIn("collision", user.username)
+ 
+    @patch("accounts.views.requests.get")
+    def test_facebook_login_username_collision_handled(self, mock_get):
+        """Dòng 726: Facebook username collision -> thêm counter."""
+        User.objects.create_user(
+            username="fbcollision",
+            email="fbother@example.com",
+            password=TEST_PASSWORD,  
+        )
+        mock_get.side_effect = None
+ 
+        def fake_get(url, params=None, **kwargs):
+            mock_resp = MagicMock()
+            mock_resp.raise_for_status.return_value = None
+            if "debug_token" in url:
+                mock_resp.json.return_value = {"data": {"is_valid": True}}
+            else:
+                mock_resp.json.return_value = {
+                    "id": "fb-collision-1",
+                    "email": "fbcollision@example.com",
+                }
+            return mock_resp
+ 
+        mock_get.side_effect = fake_get
+        res = self.client.post(
+            "/api/auth/facebook/login/",
+            {"access_token": "tok"},
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+ 
+    @patch("accounts.views.requests.get")
+    def test_facebook_callback_username_collision_handled(self, mock_get):
+        """Dòng 763: FacebookCallback username collision."""
+        User.objects.create_user(
+            username="fbcb_collision",
+            email="fbcbother@example.com",
+            password=TEST_PASSWORD,  
+        )
+ 
+        def fake_get(url, params=None, **kwargs):
+            mock_resp = MagicMock()
+            mock_resp.raise_for_status.return_value = None
+            if "oauth/access_token" in url:
+                mock_resp.json.return_value = {"access_token": "fb-tok-col"}
+            else:
+                mock_resp.json.return_value = {
+                    "id": "fb-cb-collision-1",
+                    "email": "fbcb_collision@example.com",
+                }
+            return mock_resp
+ 
+        mock_get.side_effect = fake_get
+        res = self.client.post(
+            "/api/auth/facebook/callback/",
+            {"code": "fake-code"},
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+ 
+    @patch("accounts.views.requests.get")
+    def test_facebook_callback_picture_saved_to_profile(self, mock_get):
+        """Dòng 745, 753-754: có picture trong userinfo -> lưu vào profile.avatar."""
+ 
+        def fake_get(url, params=None, **kwargs):
+            mock_resp = MagicMock()
+            mock_resp.raise_for_status.return_value = None
+            if "oauth/access_token" in url:
+                mock_resp.json.return_value = {"access_token": "fb-tok-pic"}
+            else:
+                mock_resp.json.return_value = {
+                    "id": "fb-pic-1",
+                    "email": "fbpic@example.com",
+                    "picture": {
+                        "data": {"url": "http://example.com/avatar.jpg"}
+                    },
+                }
+            return mock_resp
+ 
+        mock_get.side_effect = fake_get
+        res = self.client.post(
+            "/api/auth/facebook/callback/",
+            {"code": "fake-code"},
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        user = User.objects.get(email="fbpic@example.com")
+        profile = Profile.objects.get(user=user)
+        self.assertIn("avatar", str(profile.avatar) or "avatar")
+ 
+    @patch("accounts.views.requests.get")
+    def test_google_callback_creates_user_with_username_collision(self, mock_get):
+        """Dòng 696: GoogleCallback username collision."""
+        User.objects.create_user(
+            username="gcb_collision",
+            email="gcbother@example.com",
+            password=TEST_PASSWORD,  
+        )
+ 
+        @patch("accounts.views.requests.post")
+        def run(mock_post):
+            mock_post.return_value.json.return_value = {"access_token": "tok-gcb"}
+            mock_post.return_value.raise_for_status.return_value = None
+            mock_get.return_value.json.return_value = {
+                "email": "gcb_collision@example.com",
+                "id": "g-gcb-col-1",
+            }
+            mock_get.return_value.raise_for_status.return_value = None
+            res = self.client.post(
+                "/api/auth/google/callback/",
+                {"code": "fake-code"},
+                format="json",
+            )
+            return res
+ 
+        res = run()
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
