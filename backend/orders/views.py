@@ -467,7 +467,12 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         allowed_payment = {c[0] for c in Order.PAYMENT_METHOD_CHOICES}
         raw_payment = (request.data.get("payment_method") or "cod").strip().lower()
-        payment_method = raw_payment if raw_payment in allowed_payment else "cod"
+        if raw_payment not in allowed_payment:
+            return Response(
+                {"detail": "Phương thức thanh toán không được hỗ trợ."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        payment_method = raw_payment
         if payment_method in ("vnpay", "momo", "zalopay"):
             gateway_status = "pending"
         elif payment_method == "wallet":
