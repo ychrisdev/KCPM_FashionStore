@@ -119,6 +119,36 @@ class ProductViewSet(viewsets.ModelViewSet):
         queryset = self._filter_by_low_stock(queryset)
         
         sort = self.request.query_params.get('sort', '')
+
+        # Tìm kiếm nâng cao với Q objects - tìm kiếm một phần (partial matching)
+        search_query = self.request.query_params.get('search', '')
+        if search_query:
+            queryset = queryset.filter(
+                Q(name__icontains=search_query) |
+                Q(description__icontains=search_query) |
+                Q(category__name__icontains=search_query)
+            )
+
+        # Lọc theo category
+        category_id = self.request.query_params.get('category')
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
+
+        # Lọc theo promotion
+        promotion_id = self.request.query_params.get('promotion')
+        if promotion_id:
+            queryset = queryset.filter(promotion_id=promotion_id)
+
+        # Lọc sản phẩm có khuyến mãi
+        has_promotion = self.request.query_params.get('has_promotion')
+        if has_promotion == 'true':
+            queryset = queryset.filter(promotion__isnull=False)
+
+        queryset = self._filter_by_price(queryset)
+        queryset = self._filter_by_low_stock(queryset)
+        
+        sort = self.request.query_params.get('sort', '')
+        
         if sort == 'rating-desc':
             queryset = queryset.order_by('-rating')
         elif sort == 'popular':
