@@ -2,7 +2,7 @@
 source = .
 branch = true
 omit =
-    */management/commands/*
+    orders/management/*
     */migrations/*
     accounts/birthday_reminder.py
     accounts/generate_birthday_voucher.py
