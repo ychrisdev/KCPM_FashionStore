@@ -11,6 +11,7 @@ omit =
     accounts/management/*
     */tests.py
     */test_*.py
+    */tests_*.py
     admin_tests.py
     manage.py
     api/wsgi.py
