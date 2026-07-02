@@ -211,7 +211,9 @@ class ProductSerializer(serializers.ModelSerializer):
             "size_chart_upload",
             "clear_size_chart",
         )
-        
+        extra_kwargs = {
+            "description": {"required": False, "allow_blank": True},
+        }
     def get_size_chart(self, obj: Product) -> str | None:
         if not obj.size_chart:
             return None
