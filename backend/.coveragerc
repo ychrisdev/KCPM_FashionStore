@@ -2,7 +2,9 @@
 source = .
 branch = true
 omit =
-    orders/management/*
+    orders/management/seed_ecommerce.py
+    orders/management/audit_order_schema.py
+    products/management/*
     */migrations/*
     accounts/birthday_reminder.py
     accounts/generate_birthday_voucher.py
