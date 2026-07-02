@@ -82,7 +82,7 @@ class Order(models.Model):
         default=0,
         help_text="So tien giam tu ma giam gia (VND)",
     )
-    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    total_price = models.DecimalField(max_digits=12, decimal_places=2)
     status = models.CharField(max_length=25, choices=STATUS_CHOICES, default="pending")
     created_at = models.DateTimeField(auto_now_add=True)
     confirmed_by_user = models.BooleanField(default=False)
