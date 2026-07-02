@@ -10,7 +10,7 @@ from rest_framework.exceptions import ValidationError
 from core.permissions import IsAdminOrReadOnly, IsAdminWritePublicRead
 from .models import Category, Promotion, Product, ProductVariant, Color, Size, ProductImage
 from .serializers import CategorySerializer, PromotionSerializer, ProductSerializer, ProductVariantSerializer, ColorSerializer, SizeSerializer, ProductImageSerializer
-
+INVALID_NUMBER_ERROR = "Giá trị không hợp lệ, phải là số."
 
 class ProductPagination(PageNumberPagination):
     page_size = 10
@@ -71,6 +71,35 @@ class ProductViewSet(viewsets.ModelViewSet):
     ordering_fields = ["id", "price", "name"]
     filter_backends = [filters.OrderingFilter]  # Enable only ordering, search is custom
 
+    def _parse_int_param(self, value, field_name):
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            raise ValidationError({field_name: INVALID_NUMBER_ERROR})
+
+    def _filter_by_price(self, queryset):
+        min_price = self.request.query_params.get('min_price')
+        max_price = self.request.query_params.get('max_price')
+        if min_price:
+            queryset = queryset.filter(price__gte=self._parse_int_param(min_price, "min_price"))
+        if max_price:
+            queryset = queryset.filter(price__lte=self._parse_int_param(max_price, "max_price"))
+        return queryset
+
+    def _filter_by_low_stock(self, queryset):
+        low_stock = self.request.query_params.get("low_stock")
+        if low_stock != "true":
+            return queryset
+        raw_threshold = self.request.query_params.get("stock_threshold", 5)
+        threshold = self._parse_int_param(raw_threshold, "stock_threshold")
+        return queryset.filter(
+            Exists(
+                ProductVariant.objects.filter(
+                    product_id=OuterRef("pk"), stock__lte=threshold
+                )
+            )
+        )
+    
     def get_queryset(self):
         queryset = super().get_queryset()
 
@@ -86,51 +115,8 @@ class ProductViewSet(viewsets.ModelViewSet):
                 Q(category__name__icontains=search_query)
             )
 
-        # Lọc theo category
-        category_id = self.request.query_params.get('category')
-        if category_id:
-            queryset = queryset.filter(category_id=category_id)
-        
-        # Lọc theo promotion
-        promotion_id = self.request.query_params.get('promotion')
-        if promotion_id:
-            queryset = queryset.filter(promotion_id=promotion_id)
-        
-        # Lọc sản phẩm có khuyến mãi
-        has_promotion = self.request.query_params.get('has_promotion')
-        if has_promotion == 'true':
-            queryset = queryset.filter(promotion__isnull=False)
-        
-        # Lọc theo khoảng giá
-        min_price = self.request.query_params.get('min_price')
-        max_price = self.request.query_params.get('max_price')
-        if min_price:
-            try:
-                min_price = int(min_price)
-            except (TypeError, ValueError):
-                raise ValidationError({"min_price": "Giá trị không hợp lệ, phải là số."})
-            queryset = queryset.filter(price__gte=min_price)
-        if max_price:
-            try:
-                max_price = int(max_price)
-            except (TypeError, ValueError):
-                raise ValidationError({"max_price": "Giá trị không hợp lệ, phải là số."})
-            queryset = queryset.filter(price__lte=max_price)
-
-        low_stock = self.request.query_params.get("low_stock")
-        if low_stock == "true":
-            raw_threshold = self.request.query_params.get("stock_threshold", 5)
-            try:
-                threshold = int(raw_threshold)
-            except (TypeError, ValueError):
-                raise ValidationError({"stock_threshold": "Giá trị không hợp lệ, phải là số."})
-            queryset = queryset.filter(
-                Exists(
-                    ProductVariant.objects.filter(
-                        product_id=OuterRef("pk"), stock__lte=threshold
-                    )
-                )
-            )
+        queryset = self._filter_by_price(queryset)
+        queryset = self._filter_by_low_stock(queryset)
         
         sort = self.request.query_params.get('sort', '')
         if sort == 'rating-desc':

@@ -474,14 +474,12 @@ class CheckoutViewBranchTests(TestCase):
         self.assertEqual(order.discount_code_snapshot, "SAVE10")
 
     # ---- payment method branches ----
-    def test_unsupported_payment_method_falls_back_to_cod(self):
+    def test_unsupported_payment_method_rejected(self):
         response = self.client.post(
             self.CHECKOUT_URL, self._payload(payment_method="bitcoin"), format="json"
         )
-        self.assertEqual(response.status_code, 201)
-        order = Order.objects.get()
-        self.assertEqual(order.payment_method, "cod")
-        self.assertEqual(order.gateway_status, "none")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Phương thức thanh toán không được hỗ trợ", response.data["detail"])
 
     def test_cod_payment_success(self):
         response = self.client.post(self.CHECKOUT_URL, self._payload(payment_method="cod"), format="json")
