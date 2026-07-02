@@ -43,8 +43,8 @@ class PromotionSerializer(serializers.ModelSerializer):
     def validate_discount_percent(self, value):
         if value <= 0:
             raise serializers.ValidationError("% giảm giá phải lớn hơn 0.")
-        if value > 100:
-            raise serializers.ValidationError("% giảm giá không được vượt quá 100.")
+        if value >= 100:
+            raise serializers.ValidationError("% giảm giá phải nhỏ hơn 100.")
         return value
 
     def validate(self, attrs):
@@ -106,7 +106,7 @@ class ProductVariantSerializer(serializers.ModelSerializer):
         from decimal import Decimal, ROUND_HALF_UP
         base = Decimal(obj.get_price())
         promo = obj.product.promotion
-        if promo and promo.is_active:
+        if promo and promo.is_active and promo.discount_percent < 100:
             base = base * (Decimal(100) - Decimal(promo.discount_percent)) / Decimal(100)
         return int(base.quantize(Decimal("1"), rounding=ROUND_HALF_UP))
 
@@ -211,7 +211,9 @@ class ProductSerializer(serializers.ModelSerializer):
             "size_chart_upload",
             "clear_size_chart",
         )
-        
+        extra_kwargs = {
+            "description": {"required": False, "allow_blank": True},
+        }
     def get_size_chart(self, obj: Product) -> str | None:
         if not obj.size_chart:
             return None
@@ -284,6 +286,8 @@ class ProductSerializer(serializers.ModelSerializer):
     def get_old_price(self, obj: Product) -> float | None:
         if obj.promotion and obj.promotion.is_active:
             discount = obj.promotion.discount_percent
+            if discount >= 100:
+                return None
             original_price = float(obj.price) / (1 - discount / 100)
             return round(original_price)
         return None
@@ -297,10 +301,11 @@ class ProductSerializer(serializers.ModelSerializer):
             effective = base_price
             if promo:
                 from decimal import Decimal, ROUND_HALF_UP
-                effective = int(
-                    (Decimal(base_price) * (Decimal(100) - Decimal(promo.discount_percent)) / Decimal(100))
-                    .quantize(Decimal("1"), rounding=ROUND_HALF_UP)
-                )
+                if promo.discount_percent < 100:
+                    effective = int(
+                        (Decimal(base_price) * (Decimal(100) - Decimal(promo.discount_percent)) / Decimal(100))
+                        .quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+                    )
             result.append({
                 "id": v.id,
                 "color": {"id": v.color.id, "name": v.color.name, "code": v.color.code},

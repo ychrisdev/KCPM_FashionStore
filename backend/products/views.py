@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import filters
 from datetime import datetime
+from rest_framework.exceptions import ValidationError
 
 from core.permissions import IsAdminOrReadOnly, IsAdminWritePublicRead
 from .models import Category, Promotion, Product, ProductVariant, Color, Size, ProductImage
@@ -104,13 +105,25 @@ class ProductViewSet(viewsets.ModelViewSet):
         min_price = self.request.query_params.get('min_price')
         max_price = self.request.query_params.get('max_price')
         if min_price:
+            try:
+                min_price = int(min_price)
+            except (TypeError, ValueError):
+                raise ValidationError({"min_price": "Giá trị không hợp lệ, phải là số."})
             queryset = queryset.filter(price__gte=min_price)
         if max_price:
+            try:
+                max_price = int(max_price)
+            except (TypeError, ValueError):
+                raise ValidationError({"max_price": "Giá trị không hợp lệ, phải là số."})
             queryset = queryset.filter(price__lte=max_price)
 
         low_stock = self.request.query_params.get("low_stock")
         if low_stock == "true":
-            threshold = int(self.request.query_params.get("stock_threshold", 5))
+            raw_threshold = self.request.query_params.get("stock_threshold", 5)
+            try:
+                threshold = int(raw_threshold)
+            except (TypeError, ValueError):
+                raise ValidationError({"stock_threshold": "Giá trị không hợp lệ, phải là số."})
             queryset = queryset.filter(
                 Exists(
                     ProductVariant.objects.filter(

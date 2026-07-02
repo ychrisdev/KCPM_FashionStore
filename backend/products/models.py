@@ -36,7 +36,7 @@ class Promotion(models.Model):
 
 class Product(models.Model):
     name = models.CharField(max_length=200)
-    description = models.TextField()
+    description = models.TextField(blank=True, default="")
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     price = models.IntegerField(validators=[MinValueValidator(1, message="Giá sản phẩm phải lớn hơn 0.")])
     promotion = models.ForeignKey(Promotion, on_delete=models.SET_NULL, null=True, blank=True)
