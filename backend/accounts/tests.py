@@ -741,10 +741,6 @@ class PasswordResetRequestViewTests(TestCase):
         self.assertIn("Lỗi gửi email", res.data["message"])
         
 class RegisterValidationTests(TestCase):
-    """
-    Cover các trường hợp lỗi validation trong RegisterSerializer.
-    Các TC thành công (REG-TC01, TC02, TC03) đã có trong RegisterViewTests.
-    """
 
     def setUp(self):
         self.client = APIClient()
@@ -769,44 +765,44 @@ class RegisterValidationTests(TestCase):
         return base
 
     def test_register_fail_username_blank(self):
-        """REG-TC04: HTTP 400, lỗi field username khi để trống."""
+        """REG-TC07: HTTP 400, lỗi field username khi để trống."""
         res = self._post(self._valid_payload(username=""))
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("username", res.data)
 
     def test_register_fail_email_blank(self):
-        """REG-TC05: HTTP 400, lỗi field email khi để trống."""
+        """REG-TC08: HTTP 400, lỗi field email khi để trống."""
         res = self._post(self._valid_payload(email=""))
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("email", res.data)
 
     def test_register_fail_username_already_exists(self):
-        """REG-TC06: HTTP 400, username trùng với tài khoản đã có."""
+        """REG-TC09: HTTP 400, username trùng với tài khoản đã có."""
         res = self._post(self._valid_payload(username="existinguser"))
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("username", res.data)
 
     def test_register_fail_email_invalid_format(self):
-        """REG-TC07: HTTP 400, email không có @ hoặc thiếu tên miền."""
+        """REG-TC10: HTTP 400, email không có @ hoặc thiếu tên miền."""
         res = self._post(self._valid_payload(email="not-an-email"))
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("email", res.data)
 
     def test_register_fail_email_missing_domain(self):
-        """REG-TC07 biến thể: email thiếu tên miền (có @ nhưng không có domain)."""
+        """REG-TC10 biến thể: email thiếu tên miền (có @ nhưng không có domain)."""
         res = self._post(self._valid_payload(email="user@"))
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("email", res.data)
 
     def test_register_fail_email_already_used(self):
-        """REG-TC08: HTTP 400, email trùng với tài khoản đã đăng ký."""
+        """REG-TC11: HTTP 400, email trùng với tài khoản đã đăng ký."""
         res = self._post(self._valid_payload(email="existing@example.com"))
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("email", res.data)
         self.assertIn("Email đã được sử dụng", str(res.data["email"]))
 
     def test_register_fail_password_too_short(self):
-        """REG-TC09: HTTP 400, mật khẩu 7 ký tự (dưới min_length=8)."""
+        """REG-TC12: HTTP 400, mật khẩu 7 ký tự (dưới min_length=8)."""
         res = self._post(self._valid_payload(
             password="abc1234",
             password_confirm="abc1234",
@@ -815,7 +811,7 @@ class RegisterValidationTests(TestCase):
         self.assertIn("password", res.data)
 
     def test_register_fail_password_blank(self):
-        """REG-TC10: HTTP 400, mật khẩu bỏ trống."""
+        """REG-TC13: HTTP 400, mật khẩu bỏ trống."""
         res = self._post(self._valid_payload(
             password="",
             password_confirm="",
@@ -824,7 +820,7 @@ class RegisterValidationTests(TestCase):
         self.assertIn("password", res.data)
 
     def test_register_fail_password_confirm_mismatch(self):
-        """REG-TC11: HTTP 400, xác nhận mật khẩu không khớp."""
+        """REG-TC14: HTTP 400, xác nhận mật khẩu không khớp."""
         res = self._post(self._valid_payload(
             password=TEST_PASSWORD,
             password_confirm="different_password99",
@@ -834,7 +830,7 @@ class RegisterValidationTests(TestCase):
         self.assertIn("Mật khẩu xác nhận không khớp", str(res.data["password_confirm"]))
 
     def test_register_fail_password_confirm_blank(self):
-        """REG-TC11b: HTTP 400, password_confirm để trống (khác với 'không khớp')."""
+        """REG-TC15: HTTP 400, password_confirm để trống (khác với 'không khớp')."""
         res = self._post(self._valid_payload(
             password=TEST_PASSWORD,
             password_confirm="",
@@ -848,7 +844,7 @@ class RegisterValidationTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
 
     def test_register_success_username_150_chars(self):
-        """REG-TC03: HTTP 201, username đúng 150 ký tự."""
+        """REG-TC06: HTTP 201, username đúng 150 ký tự."""
         long_username = "u" * 150
         res = self._post(self._valid_payload(username=long_username))
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
@@ -863,11 +859,40 @@ class RegisterValidationTests(TestCase):
         self.assertIn("username", res.data["user"])
         self.assertIn("email", res.data["user"])
         self.assertNotIn("password", str(res.data))
+        
+    def test_register_success_username_2_chars(self):
+        """REG-TC03: HTTP 201, username đúng 2 ký tự (Min+)."""
+        username = "ab"
+        res = self._post(self._valid_payload(username=username))
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(res.data["user"]["username"], username)
+
+    def test_register_success_username_15_chars(self):
+        """REG-TC04: HTTP 201, username đúng 15 ký tự (Nominal)."""
+        username = "u" * 15
+        res = self._post(self._valid_payload(username=username))
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(res.data["user"]["username"], username)
+
+    def test_register_success_username_149_chars(self):
+        """REG-TC05: HTTP 201, username đúng 149 ký tự (Max−)."""
+        username = "u" * 149
+        res = self._post(self._valid_payload(username=username))
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(res.data["user"]["username"], username)
+
+    def test_register_success_password_12_chars(self):
+        """REG-TC16: HTTP 201, mật khẩu đúng 12 ký tự (Nominal)."""
+        password = "abcdef123456"
+        res = self._post(self._valid_payload(password=password, password_confirm=password))
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertIn("user", res.data)
+        self.assertNotIn("password", str(res.data))
 
 class LoginTests(TestCase):
     """
     Cover CustomTokenObtainPairSerializer — đăng nhập bằng username/email.
-    LOGIN-TC01 đến TC10.
+    LOGIN-TC01 đến TC16.
     """
 
     def setUp(self):
@@ -885,6 +910,28 @@ class LoginTests(TestCase):
             password=TEST_PASSWORD,  
             is_active=False,
         )
+        self.user_username_1char = User.objects.create_user(
+            username="a",
+            email="user1char@example.com",
+            password=TEST_PASSWORD,
+        )
+        self.user_username_2char = User.objects.create_user(
+            username="ab",
+            email="user2char@example.com",
+            password=TEST_PASSWORD,
+        )
+        self.username_20char = "u" * 20
+        self.user_username_20char = User.objects.create_user(
+            username=self.username_20char,
+            email="user20char@example.com",
+            password=TEST_PASSWORD,
+        )
+        self.password_12char = "abcdef123456"
+        self.user_password_12char = User.objects.create_user(
+            username="user12charpass",
+            email="user12charpass@example.com",
+            password=self.password_12char,
+        )
 
     def _post(self, username, password):
         return self.client.post(
@@ -900,9 +947,41 @@ class LoginTests(TestCase):
         self.assertIn("access", res.data)
         self.assertIn("refresh", res.data)
         self.assertEqual(res.data["user"]["username"], "loginuser")
+        
+    def test_login_success_username_1_char(self):
+        """LOGIN-TC02: HTTP 200, đăng nhập thành công với username 1 ký tự (Min)."""
+        res = self._post("a", TEST_PASSWORD)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn("access", res.data)
+        self.assertIn("refresh", res.data)
+        self.assertEqual(res.data["user"]["username"], "a")
+
+    def test_login_success_username_2_chars(self):
+        """LOGIN-TC03: HTTP 200, đăng nhập thành công với username 2 ký tự (Min+)."""
+        res = self._post("ab", TEST_PASSWORD)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn("access", res.data)
+        self.assertIn("refresh", res.data)
+        self.assertEqual(res.data["user"]["username"], "ab")
+
+    def test_login_success_username_20_chars(self):
+        """LOGIN-TC04: HTTP 200, đăng nhập thành công với username 20 ký tự (Nominal)."""
+        res = self._post(self.username_20char, TEST_PASSWORD)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn("access", res.data)
+        self.assertIn("refresh", res.data)
+        self.assertEqual(res.data["user"]["username"], self.username_20char)
+
+    def test_login_success_password_12_chars(self):
+        """LOGIN-TC07: HTTP 200, đăng nhập thành công với mật khẩu 12 ký tự (Nominal)."""
+        res = self._post("user12charpass", self.password_12char)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn("access", res.data)
+        self.assertIn("refresh", res.data)
+        self.assertEqual(res.data["user"]["username"], "user12charpass")
 
     def test_login_success_by_email(self):
-        """LOGIN-TC02: HTTP 200, trả về đầy đủ token và thông tin tài khoản."""
+        """LOGIN-TC08: HTTP 200, trả về đầy đủ token..."""
         res = self._post("loginuser@example.com", TEST_PASSWORD)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertIn("access", res.data)
@@ -910,13 +989,13 @@ class LoginTests(TestCase):
         self.assertIn("email", res.data["user"])
 
     def test_login_success_email_case_insensitive(self):
-        """LOGIN-TC03: HTTP 200, email viết hoa vẫn xác thực thành công."""
+        """LOGIN-TC09: HTTP 200, email viết hoa..."""
         res = self._post("LOGINUSER@EXAMPLE.COM", TEST_PASSWORD)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertIn("access", res.data)
 
     def test_login_fail_username_blank(self):
-        """LOGIN-TC04: HTTP 400, thông báo yêu cầu nhập username/email."""
+        """LOGIN-TC10: HTTP 400, thông báo yêu cầu..."""
         res = self._post("", TEST_PASSWORD)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("detail", res.data)
@@ -936,7 +1015,7 @@ class LoginTests(TestCase):
         )
 
     def test_login_fail_both_blank(self):
-        """LOGIN-TC05b: HTTP 400, cả username và password đều trống."""
+        """LOGIN-TC11: HTTP 400, cả username..."""
         res = self._post("", "")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("detail", res.data)
@@ -946,7 +1025,7 @@ class LoginTests(TestCase):
         )
 
     def test_login_fail_username_not_found(self):
-        """LOGIN-TC06: HTTP 400, username không tồn tại trong hệ thống."""
+        """LOGIN-TC12: HTTP 400, username không tồn tại..."""
         res = self._post("nonexistentuser_xyz", TEST_PASSWORD)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("detail", res.data)
@@ -956,7 +1035,7 @@ class LoginTests(TestCase):
         )
 
     def test_login_fail_email_not_found(self):
-        """LOGIN-TC07: HTTP 400, email không tồn tại trong hệ thống."""
+        """LOGIN-TC13: HTTP 400, email không tồn tại..."""
         res = self._post("notfound@example.com", TEST_PASSWORD)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("detail", res.data)
@@ -966,8 +1045,18 @@ class LoginTests(TestCase):
         )
 
     def test_login_fail_wrong_password(self):
-        """LOGIN-TC08: HTTP 400, mật khẩu không đúng."""
+        """LOGIN-TC14: HTTP 400, mật khẩu không đúng."""
         res = self._post("loginuser", "wrongpassword999")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("detail", res.data)
+        self.assertIn(
+            "Email/tên đăng nhập hoặc mật khẩu không đúng",
+            str(res.data["detail"]),
+        )
+    
+    def test_login_fail_wrong_password_1_char(self):
+        """LOGIN-TC06: HTTP 400, mật khẩu 1 ký tự sai (Min+)."""
+        res = self._post("loginuser", "x")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("detail", res.data)
         self.assertIn(
@@ -976,7 +1065,7 @@ class LoginTests(TestCase):
         )
 
     def test_login_fail_account_disabled(self):
-        """LOGIN-TC09: HTTP 400, tài khoản chưa được kích hoạt."""
+        """LOGIN-TC15: HTTP 400, tài khoản chưa được kích hoạt."""
         res = self._post("disableduser", TEST_PASSWORD)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("detail", res.data)
@@ -986,7 +1075,7 @@ class LoginTests(TestCase):
         )
 
     def test_login_response_structure_complete(self):
-        """LOGIN-TC10: Phản hồi chứa đủ access, refresh, id, username, email, first_name, last_name."""
+        """LOGIN-TC16: Phản hồi chứa đủ..."""
         res = self._post("loginuser", TEST_PASSWORD)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertIn("access", res.data)
