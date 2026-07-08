@@ -17,6 +17,7 @@ import { getEstimatedDeliveryTime } from "../utils/delivery";
 import "../styles/pages/Checkout.css";
 
 const PLACEHOLDER_IMAGE = "https://via.placeholder.com/80x100?text=SP";
+const NOTE_MAX_LENGTH = 2000;
 
 interface CartItemType {
   id: number;
@@ -968,14 +969,24 @@ export default function Checkout() {
                       className="checkout-input checkout-textarea"
                       placeholder="Ghi chú thêm cho đơn hàng..."
                       rows={2}
+                      maxLength={NOTE_MAX_LENGTH}
                       value={form.note}
                       onChange={(event) =>
                         setForm((current) => ({
                           ...current,
-                          note: event.target.value,
+                          note: event.target.value.slice(0, NOTE_MAX_LENGTH),
                         }))
                       }
                     />
+                    <div
+                      className={`checkout-note-counter ${
+                        form.note.length >= NOTE_MAX_LENGTH ? "is-limit" : ""
+                      }`}
+                    >
+                      {form.note.length >= NOTE_MAX_LENGTH
+                        ? `Đã đạt giới hạn ${NOTE_MAX_LENGTH} ký tự.`
+                        : `${form.note.length}/${NOTE_MAX_LENGTH} ký tự`}
+                    </div>
                   </div>
                   <button
                     type="submit"

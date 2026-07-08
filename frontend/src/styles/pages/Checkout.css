@@ -720,6 +720,19 @@
   animation: checkout-gatewaySpin 0.75s linear infinite;
 }
 
+.checkout-note-counter {
+  margin-top: 4px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  color: var(--color-text-muted);
+  text-align: right;
+}
+
+.checkout-note-counter.is-limit {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
 @keyframes checkout-gatewaySpin {
   to {
     transform: rotate(360deg);
