@@ -329,6 +329,11 @@ class ProductSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Giá sản phẩm phải lớn hơn 0.")
         return value
         
+    def validate_stock(self, value):
+        if value is not None and value < 0:
+            raise serializers.ValidationError("Tồn kho không được nhỏ hơn 0.")
+        return value
+        
     def validate_promotion_id(self, value):
         if value is not None and not value.is_active:
             raise serializers.ValidationError(

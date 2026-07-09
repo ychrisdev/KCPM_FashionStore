@@ -40,6 +40,7 @@ export default function ProductCardModal({
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [cartItems, setCartItems] = useState<CartItemLite[]>([]);
 
   const productImage = product.image || PLACEHOLDER_IMAGE;
   const productStock = product.stock ?? 99;
@@ -149,8 +150,6 @@ export default function ProductCardModal({
   };
 
   const addingRef = useRef(false);
-
-  const [cartItems, setCartItems] = useState<CartItemLite[]>([]);
 
   const fetchCartItems = async () => {
     if (!user) {
