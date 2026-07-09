@@ -4,7 +4,8 @@ from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
-
+from django.core.validators import RegexValidator
+import re
 from orders.models import DiscountCode
 
 from .models import BirthdayEmailTemplate, Profile
@@ -98,6 +99,14 @@ class ProfileUserSerializer(serializers.ModelSerializer):
             return value
         if User.objects.filter(email__iexact=value).exclude(pk=user.pk).exists():
             raise serializers.ValidationError("Email đã được sử dụng bởi tài khoản khác.")
+        return value
+    
+    def validate_phone(self, value):
+        value = (value or "").strip()
+        if not value:
+            return value
+        if not re.match(r'^0(3|5|7|8|9)[0-9]{8}$', value):
+            raise serializers.ValidationError("Số điện thoại không đúng định dạng")
         return value
 
 
