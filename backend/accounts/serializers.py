@@ -1,13 +1,10 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from django.core.validators import validate_email
-from django.core.exceptions import ValidationError
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.core.validators import RegexValidator
-import re
-from orders.models import DiscountCode
 
+from orders.models import DiscountCode
+from core.validators import validate_phone_format
 from .models import BirthdayEmailTemplate, Profile
 from core.permissions import RoleChoices, can_manage_profile_roles
 
@@ -100,14 +97,6 @@ class ProfileUserSerializer(serializers.ModelSerializer):
         if User.objects.filter(email__iexact=value).exclude(pk=user.pk).exists():
             raise serializers.ValidationError("Email đã được sử dụng bởi tài khoản khác.")
         return value
-    
-    def validate_phone(self, value):
-        value = (value or "").strip()
-        if not value:
-            return value
-        if not re.match(r'^0(3|5|7|8|9)[0-9]{8}$', value):
-            raise serializers.ValidationError("Số điện thoại không đúng định dạng")
-        return value
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -134,6 +123,9 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Email đã được sử dụng")
         return value
 
+    def validate_phone(self, value):
+        return validate_phone_format(value)
+    
     def validate(self, data):
         if data['password'] != data['password_confirm']:
             raise serializers.ValidationError({"password_confirm": PASSWORD_MISMATCH_ERROR})
@@ -261,6 +253,9 @@ class ProfileSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Ngày sinh không được là ngày tương lai.")
         return value
 
+    def validate_phone(self, value):
+        return validate_phone_format(value)
+    
     def validate(self, attrs):
         request = self.context.get("request")
         if request and not can_manage_profile_roles(request.user):
