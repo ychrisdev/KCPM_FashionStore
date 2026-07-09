@@ -101,7 +101,6 @@ export default function Register() {
                   onChange={handleChange}
                   placeholder="Nhập tên đăng nhập"
                   required
-                  minLength={3}
                 />
               </div>
 
