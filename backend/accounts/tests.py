@@ -831,6 +831,12 @@ class RegisterValidationTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         self.assertIn("user", res.data)
         self.assertNotIn("password", str(res.data))
+    
+    def test_register_fail_phone_invalid_format(self):
+        """REG-TC17: HTTP 400, số điện thoại sai định dạng."""
+        res = self._post(self._valid_payload(phone="abc123XYZ!@#"))
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("phone", res.data)
 
 class LoginTests(TestCase):
     """
