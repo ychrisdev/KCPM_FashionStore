@@ -1,8 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { Product } from "../types";
 import { useAuth } from "../context/AuthContext";
 import { useWishlist } from "../hooks/useWishlist";
+import { cart } from "../api/client";
 import ProductCardModal from "./ProductCardModal";
 import "../styles/components/ProductCard.css";
 
@@ -22,6 +23,11 @@ interface ProductCardProps {
   onAddToCart?: (product: Product) => void;
 }
 
+interface CartItemLite {
+  product?: { id: number };
+  quantity: number;
+}
+
 export default function ProductCard({
   product,
   onAddToCart,
@@ -31,6 +37,7 @@ export default function ProductCard({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [cartQty, setCartQty] = useState(0);
 
   const notify = (
     message: string,
@@ -74,7 +81,38 @@ export default function ProductCard({
     toggleWishlist(product.id);
   };
 
-  const outOfStock = productStock === 0;
+  const fetchCartQty = async () => {
+    if (!user) {
+      setCartQty(0);
+      return;
+    }
+    try {
+      const res = await cart.get();
+      const raw = res.data as { items?: CartItemLite[] } | CartItemLite[];
+      const list = Array.isArray(raw)
+        ? ((raw[0] as { items?: CartItemLite[] })?.items ?? [])
+        : (raw.items ?? []);
+      const safeList = Array.isArray(list) ? list : [];
+      const qty = safeList
+        .filter((item) => item.product?.id === product.id)
+        .reduce((sum, item) => sum + item.quantity, 0);
+      setCartQty(qty);
+    } catch {
+      setCartQty(0);
+    }
+  };
+
+  useEffect(() => {
+    fetchCartQty();
+  }, [user, product.id]);
+
+  useEffect(() => {
+    window.addEventListener("cartUpdated", fetchCartQty);
+    return () => window.removeEventListener("cartUpdated", fetchCartQty);
+  }, [user, product.id]);
+
+  const availableStock = Math.max(0, productStock - cartQty);
+  const outOfStock = availableStock === 0;
 
   const minVariantPrice = useMemo(() => {
     const vs = product.variants ?? [];
@@ -219,7 +257,11 @@ export default function ProductCard({
               onClick={handleOpenModal}
               disabled={outOfStock}
             >
-              {outOfStock ? "Hết hàng" : "Thêm vào giỏ"}
+              {productStock === 0
+                ? "Hết hàng"
+                : outOfStock
+                  ? "Đã đủ trong giỏ"
+                  : "Thêm vào giỏ"}
             </button>
           )}
         </div>

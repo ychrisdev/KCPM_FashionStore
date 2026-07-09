@@ -33,6 +33,12 @@ interface Product {
   size_chart?: string | null;
 }
 
+interface CartItemLite {
+  product?: { id: number };
+  variant_info?: { color: { id: number }; size: { id: number } } | null;
+  quantity: number;
+}
+
 type NotifType = "success" | "error" | "info" | "warning";
 interface Notification {
   id: number;
@@ -79,6 +85,7 @@ function ProductDetail() {
   const [showSizeChart, setShowSizeChart] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const addingRef = useRef(false);
+  const [cartItems, setCartItems] = useState<CartItemLite[]>([]);
 
   const thumbListRef = useRef<HTMLDivElement>(null);
   const variants = product?.variants ?? [];
@@ -223,17 +230,37 @@ function ProductDetail() {
     setSelectedImage(firstImg);
   }, [product]);
 
-  /** Khi đổi màu/size, không để số lượng vượt tồn kho variant */
   useEffect(() => {
     if (!product) return;
     const v = variants.find(
       (x) => x.size.name === selectedSize && x.color.name === selectedColor,
     );
-    const max = variants.length > 0 ? (v?.stock ?? 0) : (product.stock ?? 0);
-    if (max > 0) {
-      setQuantity((q) => Math.min(q, max));
-    }
-  }, [product, selectedSize, selectedColor, variants]);
+    const stockMax =
+      variants.length > 0 ? (v?.stock ?? 0) : (product.stock ?? 0);
+    const alreadyInCart =
+      variants.length > 0
+        ? cartItems
+            .filter((item) => item.product?.id === product.id)
+            .filter(
+              (item) =>
+                item.variant_info &&
+                v &&
+                item.variant_info.color.id === v.color.id &&
+                item.variant_info.size.id === v.size.id,
+            )
+            .reduce((sum, item) => sum + item.quantity, 0)
+        : cartItems
+            .filter(
+              (item) => item.product?.id === product.id && !item.variant_info,
+            )
+            .reduce((sum, item) => sum + item.quantity, 0);
+    const max = Math.max(0, stockMax - alreadyInCart);
+    setQuantity((q) => (max > 0 ? Math.min(q, max) : 1));
+  }, [product, selectedSize, selectedColor, variants, cartItems]);
+
+  useEffect(() => {
+    fetchCartItems();
+  }, [user]);
 
   const handleAddToCart = async () => {
     if (!product) return;
@@ -263,6 +290,7 @@ function ProductDetail() {
           : { product_id: product.id }),
       });
       notifyCartUpdated();
+      await fetchCartItems();
       notify("Đã thêm vào giỏ hàng!", "success");
       await new Promise((res) => setTimeout(res, 1500));
     } catch (err: unknown) {
@@ -283,6 +311,23 @@ function ProductDetail() {
     } finally {
       setIsAddingToCart(false);
       addingRef.current = false;
+    }
+  };
+
+  const fetchCartItems = async () => {
+    if (!user) {
+      setCartItems([]);
+      return;
+    }
+    try {
+      const res = await cart.get();
+      const raw = res.data as { items?: CartItemLite[] } | CartItemLite[];
+      const list = Array.isArray(raw)
+        ? ((raw[0] as { items?: CartItemLite[] })?.items ?? [])
+        : (raw.items ?? []);
+      setCartItems(Array.isArray(list) ? list : []);
+    } catch {
+      setCartItems([]);
     }
   };
 
@@ -476,6 +521,26 @@ function ProductDetail() {
   );
   const variantStock =
     variants.length > 0 ? (selectedVariant?.stock ?? 0) : (product.stock ?? 0);
+
+  const inCartQuantity =
+    variants.length > 0
+      ? cartItems
+          .filter((item) => item.product?.id === product.id)
+          .filter(
+            (item) =>
+              item.variant_info &&
+              selectedVariant &&
+              item.variant_info.color.id === selectedVariant.color.id &&
+              item.variant_info.size.id === selectedVariant.size.id,
+          )
+          .reduce((sum, item) => sum + item.quantity, 0)
+      : cartItems
+          .filter(
+            (item) => item.product?.id === product.id && !item.variant_info,
+          )
+          .reduce((sum, item) => sum + item.quantity, 0);
+
+  const availableStock = Math.max(0, variantStock - inCartQuantity);
 
   const productVariantIds = new Set(product.variants?.map((v) => v.id) ?? []);
   const eligiblePurchasableVariants = purchasableVariants.filter((p) =>
@@ -750,21 +815,23 @@ function ProductDetail() {
                   <button
                     type="button"
                     onClick={() =>
-                      setQuantity(Math.min(variantStock, quantity + 1))
+                      setQuantity(Math.min(availableStock, quantity + 1))
                     }
-                    disabled={variantStock === 0}
+                    disabled={availableStock === 0}
                   >
                     +
                   </button>
                 </div>
                 <span
-                  className={`stock-info${variantStock === 0 ? " out" : variantStock <= 5 ? " low" : ""}`}
+                  className={`stock-info${variantStock === 0 ? " out" : availableStock === 0 ? " out" : availableStock <= 5 ? " low" : ""}`}
                 >
                   {variantStock === 0
                     ? "Hết hàng"
-                    : variantStock <= 5
-                      ? `Chỉ còn ${variantStock} sản phẩm`
-                      : `${variantStock} sản phẩm có sẵn`}
+                    : availableStock === 0
+                      ? `Đã có ${inCartQuantity} trong giỏ (tối đa ${variantStock})`
+                      : availableStock <= 5
+                        ? `Chỉ còn ${availableStock} sản phẩm có thể thêm`
+                        : `${variantStock} sản phẩm có sẵn`}
                 </span>
               </div>
             </div>
@@ -775,14 +842,16 @@ function ProductDetail() {
                 <button
                   className="add-to-cart-btn"
                   onClick={handleAddToCart}
-                  disabled={variantStock === 0 || isAddingToCart}
+                  disabled={availableStock === 0 || isAddingToCart}
                   type="button"
                 >
                   {variantStock === 0
                     ? "Hết hàng"
-                    : isAddingToCart
-                      ? "Đang thêm..."
-                      : "Thêm vào giỏ hàng"}
+                    : availableStock === 0
+                      ? "Đã đủ trong giỏ"
+                      : isAddingToCart
+                        ? "Đang thêm..."
+                        : "Thêm vào giỏ hàng"}
                 </button>
                 <button
                   type="button"
@@ -1251,7 +1320,10 @@ function ProductDetail() {
                       role="button"
                       aria-label={`${s} sao`}
                       tabIndex={0}
-                      onKeyDown={(e) => e.key === "Enter" && setReviewForm({ ...reviewForm, rating: s })}
+                      onKeyDown={(e) =>
+                        e.key === "Enter" &&
+                        setReviewForm({ ...reviewForm, rating: s })
+                      }
                     >
                       ★
                     </span>
