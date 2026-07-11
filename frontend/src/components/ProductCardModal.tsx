@@ -4,6 +4,7 @@ import { cart } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import "../styles/components/ProductDetail.css";
 import "../styles/components/ProductCardModal.css";
+import { notifyCartUpdated } from "../utils/cartEvents";
 
 type NotifType = "success" | "error" | "info" | "warning";
 interface Notification {
@@ -20,6 +21,12 @@ interface ProductCardModalProps {
   product: Product;
 }
 
+interface CartItemLite {
+  product?: { id: number };
+  variant_info?: { color: { id: number }; size: { id: number } } | null;
+  quantity: number;
+}
+
 const PLACEHOLDER_IMAGE = "https://via.placeholder.com/300x400?text=San+pham";
 
 export default function ProductCardModal({
@@ -33,6 +40,7 @@ export default function ProductCardModal({
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [cartItems, setCartItems] = useState<CartItemLite[]>([]);
 
   const productImage = product.image || PLACEHOLDER_IMAGE;
   const productStock = product.stock ?? 99;
@@ -66,6 +74,9 @@ export default function ProductCardModal({
       setQuantity(1);
     }
   }, [isOpen, variants]);
+  useEffect(() => {
+    if (isOpen) fetchCartItems();
+  }, [isOpen, user]);
 
   useEffect(() => {
     if (!variants.length) return;
@@ -104,6 +115,26 @@ export default function ProductCardModal({
   const variantStock =
     variants.length > 0 ? (selectedVariant?.stock ?? 0) : productStock;
 
+  const inCartQuantity =
+    variants.length > 0
+      ? cartItems
+          .filter((item) => item.product?.id === product.id)
+          .filter(
+            (item) =>
+              item.variant_info &&
+              selectedVariant &&
+              item.variant_info.color.id === selectedVariant.color.id &&
+              item.variant_info.size.id === selectedVariant.size.id,
+          )
+          .reduce((sum, item) => sum + item.quantity, 0)
+      : cartItems
+          .filter(
+            (item) => item.product?.id === product.id && !item.variant_info,
+          )
+          .reduce((sum, item) => sum + item.quantity, 0);
+
+  const availableStock = Math.max(0, variantStock - inCartQuantity);
+
   const notify = (
     message: string,
     type: NotifType = "info",
@@ -120,9 +151,30 @@ export default function ProductCardModal({
 
   const addingRef = useRef(false);
 
+  const fetchCartItems = async () => {
+    if (!user) {
+      setCartItems([]);
+      return;
+    }
+    try {
+      const res = await cart.get();
+      const raw = res.data as { items?: CartItemLite[] } | CartItemLite[];
+      const list = Array.isArray(raw)
+        ? ((raw[0] as { items?: CartItemLite[] })?.items ?? [])
+        : (raw.items ?? []);
+      setCartItems(Array.isArray(list) ? list : []);
+    } catch {
+      setCartItems([]);
+    }
+  };
+
   const handleAddToCartConfirm = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (availableStock <= 0) {
+      notify("Bạn đã thêm tối đa số lượng có thể cho sản phẩm này.", "warning");
+      return;
+    }
     if (addingRef.current) return;
     if (!user) {
       notify("Vui lòng đăng nhập để thêm vào giỏ hàng", "warning");
@@ -143,6 +195,8 @@ export default function ProductCardModal({
           ? { product_variant_id: selectedVariant.id }
           : { product_id: product.id }),
       });
+      notifyCartUpdated();
+      await fetchCartItems();
       notify("Đã thêm vào giỏ hàng!", "success");
       await new Promise((res) => setTimeout(res, 1500));
       setTimeout(() => onClose(), 0);
@@ -364,21 +418,23 @@ export default function ProductCardModal({
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        setQuantity(Math.min(variantStock, quantity + 1));
+                        setQuantity(Math.min(availableStock, quantity + 1));
                       }}
-                      disabled={variantStock === 0}
+                      disabled={availableStock === 0}
                     >
                       +
                     </button>
                   </div>
                   <span
-                    className={`stock-info${variantStock === 0 ? " out" : variantStock <= 5 ? " low" : ""}`}
+                    className={`stock-info${variantStock === 0 ? " out" : availableStock === 0 ? " out" : availableStock <= 5 ? " low" : ""}`}
                   >
                     {variantStock === 0
                       ? "Hết hàng"
-                      : variantStock <= 5
-                        ? `Chỉ còn ${variantStock} sản phẩm`
-                        : `${variantStock} sản phẩm có sẵn`}
+                      : availableStock === 0
+                        ? `Đã có ${inCartQuantity} trong giỏ (tối đa ${variantStock})`
+                        : availableStock <= 5
+                          ? `Chỉ còn ${availableStock} sản phẩm có thể thêm`
+                          : `${variantStock} sản phẩm có sẵn`}
                   </span>
                 </div>
               </div>
@@ -387,15 +443,17 @@ export default function ProductCardModal({
             <button
               className="add-to-cart-btn"
               onClick={handleAddToCartConfirm}
-              disabled={variantStock === 0 || isAdding}
+              disabled={availableStock === 0 || isAdding}
               style={{ width: "100%", marginTop: "10px" }}
               type="button"
             >
               {variantStock === 0
                 ? "Hết hàng"
-                : isAdding
-                  ? "Đang thêm..."
-                  : "Thêm vào giỏ hàng"}
+                : availableStock === 0
+                  ? "Đã đủ trong giỏ"
+                  : isAdding
+                    ? "Đang thêm..."
+                    : "Thêm vào giỏ hàng"}
             </button>
           </div>
         </div>

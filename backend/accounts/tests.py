@@ -240,62 +240,6 @@ class PasswordResetConfirmTests(TestCase):
         self.user.refresh_from_db()
         self.assertTrue(self.user.check_password(TEST_OLD_PASSWORD))
 
-""" 
-class BirthdayReminderTests(TestCase):
-    def test_anniversary_feb29_non_leap_observed_feb28(self):
-        birth = date(2000, 2, 29)
-        self.assertTrue(_is_anniversary_birthday(birth, date(2027, 2, 28)))
-        self.assertFalse(_is_anniversary_birthday(birth, date(2027, 3, 1)))
-
-    def test_anniversary_feb29_leap_year(self):
-        birth = date(2000, 2, 29)
-        self.assertTrue(_is_anniversary_birthday(birth, date(2028, 2, 29)))
-
-    @patch("accounts.birthday_reminder._tomorrow_local", return_value=date(2026, 6, 1))
-    @override_settings(
-        EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
-        EMAIL_HOST_USER="sender@example.com",
-        DEFAULT_FROM_EMAIL="FashionStore <sender@example.com>",
-        BIRTHDAY_REMINDER_EMAIL_ENABLED=True,
-        BIRTHDAY_VOUCHER_CODE="SN2026",
-    )
-    def test_send_reminder_once_and_marks_year(self, _mock_tomorrow):
-        user = User.objects.create_user(
-            username="bday_user",
-            email="bday@example.com",
-            password=TEST_PASSWORD,  
-        )
-        p = Profile.objects.get(user=user)
-        p.birth_date = date(1995, 6, 1)
-        p.save(update_fields=["birth_date"])
-
-        mail.outbox.clear()
-        sent, _ = send_birthday_reminder_emails()
-        self.assertEqual(sent, 1)
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertIn("SN2026", mail.outbox[0].body)
-
-        p.refresh_from_db()
-        self.assertEqual(p.birthday_reminder_sent_for_year, 2026)
-
-        mail.outbox.clear()
-        sent2, _ = send_birthday_reminder_emails()
-        self.assertEqual(sent2, 0)
-        self.assertEqual(len(mail.outbox), 0)
-
-    @patch("accounts.birthday_reminder._tomorrow_local", return_value=date(2026, 6, 1))
-    def test_iter_skips_staff(self, _mock_tomorrow):
-        user = User.objects.create_user(
-            username="staff_bday",
-            email="st@example.com",
-            password=TEST_PASSWORD,  
-        )
-        p = Profile.objects.get(user=user)
-        p.role = RoleChoices.STAFF
-        p.birth_date = date(1990, 6, 1)
-        p.save(update_fields=["role", "birth_date"])
-        self.assertEqual(iter_profiles_birthday_tomorrow(), [])
- """
 class ChangePasswordViewTests(TestCase):
     def setUp(self):
         self.client = APIClient()
@@ -662,7 +606,6 @@ class FacebookCallbackViewTests(TestCase):
         )
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
-
 class PasswordResetRequestViewTests(TestCase):
     """Cover PasswordResetRequestView.post() và _send_password_reset_email."""
 
@@ -763,6 +706,49 @@ class RegisterValidationTests(TestCase):
         }
         base.update(overrides)
         return base
+    
+    def test_register_success_password_8_chars(self):
+        """REG-TC01: HTTP 201, mật khẩu đúng 8 ký tự, response có id/username/email."""
+        res = self._post(self._valid_payload(password="abcd1234", password_confirm="abcd1234"))
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertIn("user", res.data)
+        self.assertIn("id", res.data["user"])
+        self.assertIn("username", res.data["user"])
+        self.assertIn("email", res.data["user"])
+        self.assertNotIn("password", str(res.data))
+        
+    def test_register_success_username_1_char(self):
+        """REG-TC02: HTTP 201, username 1 ký tự hợp lệ."""
+        res = self._post(self._valid_payload(username="a"))
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        
+    def test_register_success_username_2_chars(self):
+        """REG-TC03: HTTP 201, username đúng 2 ký tự (Min+)."""
+        username = "ab"
+        res = self._post(self._valid_payload(username=username))
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(res.data["user"]["username"], username)
+
+    def test_register_success_username_15_chars(self):
+        """REG-TC04: HTTP 201, username đúng 15 ký tự (Nominal)."""
+        username = "u" * 15
+        res = self._post(self._valid_payload(username=username))
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(res.data["user"]["username"], username)
+
+    def test_register_success_username_149_chars(self):
+        """REG-TC05: HTTP 201, username đúng 149 ký tự (Max−)."""
+        username = "u" * 149
+        res = self._post(self._valid_payload(username=username))
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(res.data["user"]["username"], username)
+        
+    def test_register_success_username_150_chars(self):
+        """REG-TC06: HTTP 201, username đúng 150 ký tự."""
+        long_username = "u" * 150
+        res = self._post(self._valid_payload(username=long_username))
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(res.data["user"]["username"], long_username)
 
     def test_register_fail_username_blank(self):
         """REG-TC07: HTTP 400, lỗi field username khi để trống."""
@@ -838,49 +824,6 @@ class RegisterValidationTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("password_confirm", res.data)
 
-    def test_register_success_username_1_char(self):
-        """REG-TC02: HTTP 201, username 1 ký tự hợp lệ."""
-        res = self._post(self._valid_payload(username="a"))
-        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-
-    def test_register_success_username_150_chars(self):
-        """REG-TC06: HTTP 201, username đúng 150 ký tự."""
-        long_username = "u" * 150
-        res = self._post(self._valid_payload(username=long_username))
-        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(res.data["user"]["username"], long_username)
-
-    def test_register_success_password_8_chars(self):
-        """REG-TC01: HTTP 201, mật khẩu đúng 8 ký tự, response có id/username/email."""
-        res = self._post(self._valid_payload(password="abcd1234", password_confirm="abcd1234"))
-        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-        self.assertIn("user", res.data)
-        self.assertIn("id", res.data["user"])
-        self.assertIn("username", res.data["user"])
-        self.assertIn("email", res.data["user"])
-        self.assertNotIn("password", str(res.data))
-        
-    def test_register_success_username_2_chars(self):
-        """REG-TC03: HTTP 201, username đúng 2 ký tự (Min+)."""
-        username = "ab"
-        res = self._post(self._valid_payload(username=username))
-        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(res.data["user"]["username"], username)
-
-    def test_register_success_username_15_chars(self):
-        """REG-TC04: HTTP 201, username đúng 15 ký tự (Nominal)."""
-        username = "u" * 15
-        res = self._post(self._valid_payload(username=username))
-        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(res.data["user"]["username"], username)
-
-    def test_register_success_username_149_chars(self):
-        """REG-TC05: HTTP 201, username đúng 149 ký tự (Max−)."""
-        username = "u" * 149
-        res = self._post(self._valid_payload(username=username))
-        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(res.data["user"]["username"], username)
-
     def test_register_success_password_12_chars(self):
         """REG-TC16: HTTP 201, mật khẩu đúng 12 ký tự (Nominal)."""
         password = "abcdef123456"
@@ -888,6 +831,12 @@ class RegisterValidationTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         self.assertIn("user", res.data)
         self.assertNotIn("password", str(res.data))
+    
+    def test_register_fail_phone_invalid_format(self):
+        """REG-TC17: HTTP 400, số điện thoại sai định dạng."""
+        res = self._post(self._valid_payload(phone="abc123XYZ!@#"))
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("phone", res.data)
 
 class LoginTests(TestCase):
     """
@@ -971,6 +920,26 @@ class LoginTests(TestCase):
         self.assertIn("access", res.data)
         self.assertIn("refresh", res.data)
         self.assertEqual(res.data["user"]["username"], self.username_20char)
+        
+    def test_login_fail_password_blank(self):
+        """LOGIN-TC05: HTTP 400, thông báo yêu cầu nhập mật khẩu."""
+        res = self._post("loginuser", "")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("detail", res.data)
+        self.assertIn(
+            "Vui lòng nhập email hoặc tên đăng nhập và mật khẩu",
+            str(res.data["detail"]),
+        )
+    
+    def test_login_fail_wrong_password_1_char(self):
+        """LOGIN-TC06: HTTP 400, mật khẩu 1 ký tự sai (Min+)."""
+        res = self._post("loginuser", "x")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("detail", res.data)
+        self.assertIn(
+            "Email/tên đăng nhập hoặc mật khẩu không đúng",
+            str(res.data["detail"]),
+        )
 
     def test_login_success_password_12_chars(self):
         """LOGIN-TC07: HTTP 200, đăng nhập thành công với mật khẩu 12 ký tự (Nominal)."""
@@ -997,16 +966,6 @@ class LoginTests(TestCase):
     def test_login_fail_username_blank(self):
         """LOGIN-TC10: HTTP 400, thông báo yêu cầu..."""
         res = self._post("", TEST_PASSWORD)
-        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("detail", res.data)
-        self.assertIn(
-            "Vui lòng nhập email hoặc tên đăng nhập và mật khẩu",
-            str(res.data["detail"]),
-        )
-
-    def test_login_fail_password_blank(self):
-        """LOGIN-TC05: HTTP 400, thông báo yêu cầu nhập mật khẩu."""
-        res = self._post("loginuser", "")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("detail", res.data)
         self.assertIn(
@@ -1047,16 +1006,6 @@ class LoginTests(TestCase):
     def test_login_fail_wrong_password(self):
         """LOGIN-TC14: HTTP 400, mật khẩu không đúng."""
         res = self._post("loginuser", "wrongpassword999")
-        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("detail", res.data)
-        self.assertIn(
-            "Email/tên đăng nhập hoặc mật khẩu không đúng",
-            str(res.data["detail"]),
-        )
-    
-    def test_login_fail_wrong_password_1_char(self):
-        """LOGIN-TC06: HTTP 400, mật khẩu 1 ký tự sai (Min+)."""
-        res = self._post("loginuser", "x")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("detail", res.data)
         self.assertIn(

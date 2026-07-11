@@ -855,7 +855,6 @@ export default function AdminProducts() {
                           description: e.target.value,
                         })
                       }
-                      required
                     />
                   </div>
 

@@ -74,7 +74,10 @@ class ProductVariant(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     color = models.ForeignKey(Color, on_delete=models.CASCADE)
     size = models.ForeignKey(Size, on_delete=models.CASCADE)
-    stock = models.IntegerField()
+    stock = models.IntegerField(
+        default=0,
+        validators=[MinValueValidator(0, message="Tồn kho không được nhỏ hơn 0.")]
+    )
     price = models.IntegerField(
         null=True, blank=True,
         validators=[MinValueValidator(1, message="Giá biến thể phải lớn hơn 0.")]

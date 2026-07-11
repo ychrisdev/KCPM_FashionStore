@@ -334,9 +334,16 @@ export default function ProfilePage({ embedded = false }: ProfilePageProps) {
     }
   };
 
+  const isValidPhone = (v: string) => !v || /^0(3|5|7|8|9)[0-9]{8}$/.test(v);
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profile || !authUser) return;
+    const trimmedPhone = form.phone.trim();
+    if (!isValidPhone(trimmedPhone)) {
+      alert("Số điện thoại không đúng định dạng.");
+      return;
+    }
     try {
       const res = await profiles.updateMe(profile.id, {
         phone: form.phone,

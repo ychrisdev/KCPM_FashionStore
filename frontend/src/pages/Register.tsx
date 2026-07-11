@@ -27,10 +27,16 @@ export default function Register() {
     });
   };
 
+  const isValidPhone = (phone: string) => /^0(3|5|7|8|9)[0-9]{8}$/.test(phone);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setSuccess(false);
+    if (formData.phone && !isValidPhone(formData.phone)) {
+      setError('Số điện thoại không đúng định dạng');
+      return;
+    }
 
     if (formData.password !== formData.password_confirm) {
       setError('Mật khẩu xác nhận không khớp');
@@ -101,7 +107,6 @@ export default function Register() {
                   onChange={handleChange}
                   placeholder="Nhập tên đăng nhập"
                   required
-                  minLength={3}
                 />
               </div>
 
@@ -126,7 +131,7 @@ export default function Register() {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  placeholder="Nhập số điện thoại"
+                  placeholder="Nhập số điện thoại (VD: 0912345678)"
                 />
               </div>
 

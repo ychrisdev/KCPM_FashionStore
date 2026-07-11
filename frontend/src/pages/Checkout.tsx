@@ -18,6 +18,7 @@ import "../styles/pages/Checkout.css";
 
 const PLACEHOLDER_IMAGE = "https://via.placeholder.com/80x100?text=SP";
 const NOTE_MAX_LENGTH = 2000;
+const DISCOUNT_CODE_MAX_LENGTH = 20;
 
 interface CartItemType {
   id: number;
@@ -96,6 +97,10 @@ function parseSelectedCartItemIds(rawValue: string | null): number[] {
     .map((value) => Number(value.trim()))
     .filter((value) => Number.isInteger(value) && value > 0);
   return [...new Set(ids)];
+}
+
+function truncateCode(code: string, max = 16): string {
+  return code.length > max ? `${code.slice(0, max)}…` : code;
 }
 
 const SESSION_CART_KEY = "checkout_cart_items";
@@ -1194,9 +1199,12 @@ export default function Checkout() {
                       type="text"
                       className="checkout-input checkout-discount-input"
                       placeholder="Nhập mã giảm giá..."
+                      maxLength={DISCOUNT_CODE_MAX_LENGTH}
                       value={discountCode}
                       onChange={(event) => {
-                        const nextValue = event.target.value.toUpperCase();
+                        const nextValue = event.target.value
+                          .toUpperCase()
+                          .slice(0, DISCOUNT_CODE_MAX_LENGTH);
                         setDiscountCode(nextValue);
                         if (
                           pricingPreview &&
@@ -1220,8 +1228,11 @@ export default function Checkout() {
 
                   {hasAppliedDiscount && (
                     <div className="checkout-discount-meta">
-                      <span className="checkout-discount-badge">
-                        {appliedDiscountCode}
+                      <span
+                        className="checkout-discount-badge"
+                        title={appliedDiscountCode}
+                      >
+                        {truncateCode(appliedDiscountCode)}
                         {pricingPreview?.discount_percent
                           ? ` - ${pricingPreview.discount_percent}%`
                           : ""}
@@ -1263,9 +1274,11 @@ export default function Checkout() {
                 </div>
                 {pricing.discountAmount > 0 && (
                   <div className="checkout-summary-row checkout-summary-row--discount">
-                    <span>
+                    <span title={appliedDiscountCode}>
                       Giảm giá
-                      {appliedDiscountCode ? ` (${appliedDiscountCode})` : ""}
+                      {appliedDiscountCode
+                        ? ` (${truncateCode(appliedDiscountCode)})`
+                        : ""}
                     </span>
                     <span>-{formatCurrency(pricing.discountAmount)}</span>
                   </div>
